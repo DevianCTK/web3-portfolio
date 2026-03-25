@@ -1,0 +1,304 @@
+.connect-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(16, 19, 26, 0.8);
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-container {
+    position: relative;
+    width: 100%;
+    max-width: 28rem;
+    background: rgba(50, 53, 60, 0.4);
+    backdrop-filter: blur(12px);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+
+    .modal-content {
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h2 {
+          font-size: 1.5rem;
+          font-family: var(--font-headline);
+          font-weight: 700;
+          letter-spacing: -0.025em;
+          color: white;
+        }
+
+        .close-btn {
+          color: rgba(255, 255, 255, 0.4);
+          transition: color 0.2s;
+          background: none;
+          border: none;
+          cursor: pointer;
+
+          &:hover {
+            color: white;
+          }
+        }
+      }
+
+      .no-wallet-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1rem;
+        text-align: center;
+
+        .no-wallet-icon {
+          font-size: 3rem;
+          color: #ffb4ab; // error color
+        }
+
+        .no-wallet-text {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+
+          h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            font-family: var(--font-headline);
+            color: white;
+            line-height: 1;
+          }
+
+          p {
+            font-size: 0.875rem;
+            font-family: var(--font-label);
+            color: var(--color-on-surface-variant);
+            line-height: 1.2;
+            margin: 0;
+          }
+        }
+
+        .no-wallet-actions {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          margin-top: 1rem;
+
+          .btn-install {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            background-color: var(--color-primary-container, #4f378a);
+            color: var(--color-on-primary-fixed, #eaddff);
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-decoration: none;
+            transition: opacity 0.2s;
+            box-sizing: border-box;
+
+            &:hover {
+              opacity: 0.9;
+            }
+          }
+
+          .btn-demo {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: background-color 0.2s;
+            cursor: pointer;
+
+            &:hover {
+              background-color: rgba(255, 255, 255, 0.05);
+            }
+          }
+        }
+      }
+
+      .wallet-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        .wallet-item {
+          width: 100%;
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 1rem;
+          background-color: var(--color-surface-container-lowest);
+          border-radius: 0.75rem;
+          border: 1px solid transparent;
+          transition: all 0.3s;
+          cursor: pointer;
+
+          &:hover {
+            border-color: rgba(205, 189, 255, 0.4);
+            background-color: var(--color-surface-container-highest);
+
+            .wallet-icon {
+              border-color: rgba(205, 189, 255, 0.2);
+            }
+
+            .chevron {
+              color: var(--color-primary);
+            }
+          }
+
+          .wallet-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+
+            .wallet-icon {
+              width: 2.5rem;
+              height: 2.5rem;
+              background-color: var(--color-surface-container);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border-radius: 0.5rem;
+              border: 1px solid rgba(255, 255, 255, 0.05);
+              transition: all 0.3s;
+
+              img {
+                width: 1.5rem;
+                height: 1.5rem;
+              }
+            }
+
+            .wallet-text {
+              text-align: left;
+
+              .name {
+                font-weight: 500;
+                color: var(--color-on-surface);
+              }
+
+              .description {
+                font-size: 0.625rem;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                color: rgba(255, 255, 255, 0.4);
+                font-family: var(--font-label);
+              }
+            }
+          }
+
+          .chevron {
+            color: rgba(255, 255, 255, 0.2);
+            transition: color 0.2s;
+          }
+        }
+      }
+
+      .connecting-status {
+        background-color: rgba(205, 189, 255, 0.05);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        border: 1px solid rgba(205, 189, 255, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        .spinner-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 2rem;
+          height: 2rem;
+
+          .spinner-track {
+            position: absolute;
+            inset: 0;
+            border: 2px solid rgba(205, 189, 255, 0.3);
+            border-radius: 9999px;
+          }
+
+          .spinner-head {
+            position: absolute;
+            inset: 0;
+            border: 2px solid var(--color-primary);
+            border-top-color: transparent;
+            border-radius: 9999px;
+            animation: spin 1s linear infinite;
+          }
+        }
+
+        .status-text {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+
+          .title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--color-primary);
+          }
+
+          .subtitle {
+            font-size: 0.625rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: var(--font-label);
+          }
+        }
+      }
+
+      .modal-footer {
+        text-align: center;
+        padding-top: 0.5rem;
+
+        p {
+          font-size: 0.625rem;
+          text-transform: uppercase;
+          letter-spacing: 0.2em;
+          color: rgba(255, 255, 255, 0.3);
+          font-family: var(--font-label);
+
+          a {
+            color: var(--color-primary);
+            text-decoration: none;
+
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

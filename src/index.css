@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  --color-surface-tint: #cdbdff;
+  --color-surface-container-highest: #32353c;
+  --color-on-primary-fixed-variant: #4f00d0;
+  --color-outline-variant: #494456;
+  --color-surface-dim: #10131a;
+  --color-error-container: #93000a;
+  --color-tertiary: #ffb1c1;
+  --color-inverse-primary: #6833ea;
+  --color-on-primary-container: #cebfff;
+  --color-surface-container-low: #191c22;
+  --color-error: #ffb4ab;
+  --color-surface-variant: #32353c;
+  --color-tertiary-fixed: #ffd9df;
+  --color-surface-bright: #363940;
+  --color-on-tertiary-container: #ffb4c3;
+  --color-on-primary: #370096;
+  --color-primary: #cdbdff;
+  --color-on-primary-fixed: #20005f;
+  --color-on-surface: #e1e2eb;
+  --color-outline: #948da2;
+  --color-secondary: #bdf4ff;
+  --color-inverse-surface: #e1e2eb;
+  --color-on-background: #e1e2eb;
+  --color-surface-container-high: #272a31;
+  --color-on-tertiary: #66002a;
+  --color-on-tertiary-fixed-variant: #8f003f;
+  --color-surface: #10131a;
+  --color-primary-container: #5d21df;
+  --color-on-tertiary-fixed: #3f0018;
+  --color-surface-container-lowest: #0b0e14;
+  --color-tertiary-container: #a8004b;
+  --color-surface-container: #1d2026;
+  --color-primary-fixed-dim: #cdbdff;
+  --color-on-secondary-fixed-variant: #004f58;
+  --color-secondary-container: #00e3fd;
+  --color-secondary-fixed-dim: #00daf3;
+  --color-on-error: #690005;
+  --color-on-surface-variant: #cbc3d9;
+  --color-on-secondary: #00363d;
+  --color-inverse-on-surface: #2e3037;
+  --color-secondary-fixed: #9cf0ff;
+  --color-on-secondary-fixed: #001f24;
+  --color-tertiary-fixed-dim: #ffb1c1;
+  --color-background: #10131a;
+  --color-primary-fixed: #e8deff;
+  --color-on-error-container: #ffdad6;
+  --color-on-secondary-container: #00616d;
+
+  --font-headline: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-on-surface);
+    font-family: var(--font-body);
+  }
+}
+
+@layer utilities {
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .glass-panel {
+    background: rgba(50, 53, 60, 0.4);
+    backdrop-filter: blur(12px);
+  }
+  .primary-glow:hover {
+    box-shadow: 0 0 20px rgba(205, 189, 255, 0.3);
+  }
+}
