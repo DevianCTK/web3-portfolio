@@ -4,8 +4,12 @@
   letter-spacing: -0.05em;
 }
 
-.padded-route > :not(.dashboard-layout) {
-  padding: 32px;
+.padded-route {
+  padding-top: 96px; // Navbar height (64px) + comfortable spacing (32px)
+
+  & > :not(.dashboard-layout) {
+    padding: 0 32px 32px 32px; // Only pad sides and bottom
+  }
 }
 
 .counter {

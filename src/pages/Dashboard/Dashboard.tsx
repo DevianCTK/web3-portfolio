@@ -16,11 +16,6 @@ export default function DashboardLayout() {
     <div className="dashboard-layout">
       {/* Sidebar */}
       <aside className="dashboard-sidebar">
-        <div className="brand-header">
-          <span className="title">ETHEREAL</span>
-          <span className="subtitle">Sovereign Navigator</span>
-        </div>
-        
         <nav className="nav-menu">
           <NavLink to="/dashboard" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <span className="material-symbols-outlined">dashboard</span>
