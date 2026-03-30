@@ -1,5 +1,6 @@
 import { useAccount, useConnect, useDisconnect, useBalance as useWagmiBalance } from 'wagmi';
 import { injected } from 'wagmi/connectors';
+import { formatUnits } from 'viem';
 import { useWalletStore } from '../store/useWalletStore';
 import { useEffect } from 'react';
 import { checkMetaMaskInstalled, MOCK_WALLET } from '../services/web3/wallet';
@@ -29,7 +30,8 @@ export function useWallet() {
     if (!isDemoMode) {
       setAddress(wagmiAddress || null);
       if (balanceData) {
-        setBalance(`${balanceData.formatted.substring(0, 6)} ${balanceData.symbol}`);
+        const formatted = formatUnits(balanceData.value, balanceData.decimals);
+        setBalance(`${formatted.substring(0, 6)} ${balanceData.symbol}`);
       } else {
         setBalance(null);
       }

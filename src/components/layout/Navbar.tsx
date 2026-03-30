@@ -2,12 +2,13 @@ import { NavLink } from 'react-router-dom';
 import { useWallet } from '../../hooks/useWallet';
 import { Search, Bell, Settings, LogOut } from 'lucide-react';
 import { useWalletStore } from '../../store/useWalletStore';
+import { useToast } from '../ui/Toast';
 import './Navbar.scss';
 
 export function Navbar() {
   const { isConnected, address, balance, disconnect, isDemoMode } = useWallet();
-
   const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
+  const { showToast } = useToast();
 
   return (
     <header className="navbar">
@@ -20,26 +21,29 @@ export function Navbar() {
           </NavLink>
           <nav className="nav-links">
             <NavLink to="/dashboard" className={({ isActive }) => isActive ? "active" : ""}>Dashboard</NavLink>
-            <NavLink to="/swap" className={({ isActive }) => isActive ? "active" : ""}>Swap</NavLink>
+            <NavLink to="/dashboard/swap" className={({ isActive }) => isActive ? "active" : ""}>Swap</NavLink>
             <NavLink to="/markets" className={({ isActive }) => isActive ? "active" : ""}>Markets</NavLink>
-            <NavLink to="/governance" className={({ isActive }) => isActive ? "active" : ""}>Governance</NavLink>
           </nav>
         </div>
 
         {/* Right Section */}
         <div className="nav-right">
-          <div className="search-bar flex items-center">
-            <Search className="search-icon" />
-            <input type="text" placeholder="Search protocol..." />
-          </div>
 
-          <button className="icon-btn">
+          {/* <button
+            className="icon-btn"
+            onClick={() => showToast('No new notifications', 'info')}
+            title="Notifications"
+          >
             <Bell />
           </button>
 
-          <button className="icon-btn">
+          <button
+            className="icon-btn"
+            onClick={() => showToast('Settings panel coming soon', 'info')}
+            title="Settings"
+          >
             <Settings />
-          </button>
+          </button> */}
 
           {!isConnected ? (
             <button className="connect-wallet-btn" onClick={() => setConnectModalOpen(true)}>

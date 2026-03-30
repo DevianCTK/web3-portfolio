@@ -1,124 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { COIN_DETAILS } from '../../data/mockData';
+import { useToast } from '../../components/ui/Toast';
+import type { CoinDetail as CoinDetailType } from '../../data/mockData';
 import './CoinDetail.scss';
-
-const COIN_DATA: Record<string, any> = {
-  ethereum: {
-    name: 'Ethereum',
-    symbol: 'ETH',
-    price: '$2,451.28',
-    change: '4.2%',
-    isPositive: true,
-    mcap: '$294.5B',
-    rank: '#2',
-    type: 'ERC-20',
-    icon: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD_LsLf7WLVacGFoMwuM5E_ljG1PfwrC2XUGNLbjyAtBXrrVWRAWi7vgvaDtuC2fxyRMqAdXdtnWM5mYA1wPTDUt6dnU3oK996qBr0VZKH4Mu7jU6bv24xb2GzpownIuHDXaIrJvNI_C7iGxiBNb5M1o4YZMu-yMoUYcRQzXE5zAebIVEdI48bc99GWGHzTBdHwQEpGvyLGpHlnbqVLpT6AczBuID52JZ22odizfq4HhQCm2iWyfA4qDe5nYGV1Cso8tFGsbKupOLQ',
-    balance: '12.45 ETH',
-    balanceFiat: '≈ $30,518.43',
-    stats: {
-      marketCap: '$294,510,284,192',
-      volume: '$15,204,912,855',
-      supply: '120,240,112 ETH',
-      ath: '$4,891.70',
-      atl: '$0.42'
-    }
-  },
-  solana: {
-    name: 'Solana',
-    symbol: 'SOL',
-    price: '$104.92',
-    change: '1.45%',
-    isPositive: false,
-    mcap: '$45.2B',
-    rank: '#5',
-    type: 'SOL',
-    icon: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDd5FHfA4Y8dSf-wF9752-3aKWgd9EHPFLDUFj738qe92gLaUq88grVuyb_y9JqQJhSeiuOdxraLEHlLTYsB5R7i9yZBzs8znG811-0grnilv4Y3hvmlb80kDlRzY6jlWxt7JoT70Obw5AzI7u8kFlphYH9-7DU18hIqwdMSNrKjAUwqyzOgA_BWUhfs9PzfBdwK0lDpKKRHM5nNM5OKZix2rQPmcE2x9sJnQDrZO-Jki7O5ibPraLIJmthPs3j7c1tlG_rUFoDrpc',
-    balance: '150.00 SOL',
-    balanceFiat: '≈ $15,738.00',
-    stats: {
-      marketCap: '$45,210,000,000',
-      volume: '$2,104,000,000',
-      supply: '440,000,000 SOL',
-      ath: '$260.06',
-      atl: '$0.50'
-    }
-  },
-  arbitrum: {
-    name: 'Arbitrum',
-    symbol: 'ARB',
-    price: '$1.88',
-    change: '12.8%',
-    isPositive: true,
-    mcap: '$2.4B',
-    rank: '#42',
-    type: 'L2',
-    icon: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBSe587TFd77-Y6YccfqtQKEc3VLOv99vjxymaybPZfPUZUfZdpBir8Sj2IDOboAXczYG2JdUM9YQ7tdKr4YJj2g0IqqFKpQ-OSByj9YltruSlZYCRcrFsndaET0v1ME_rm4gxUWCeMhnpiKpfAALpvAm5AHKzYg-PoapRexuh2gwd5bMAm4EYjfECZ3DL7AJdqotZKe0Z44EEBC6hs7j0hK-5rvdyWwaLvk4WhZ-eMiZFy5fzEGaylZBH0_3xvOacdumby35p7fc4',
-    balance: '500.00 ARB',
-    balanceFiat: '≈ $940.00',
-    stats: {
-      marketCap: '$2,400,000,000',
-      volume: '$450,000,000',
-      supply: '1,275,000,000 ARB',
-      ath: '$2.40',
-      atl: '$0.75'
-    }
-  },
-  chainlink: {
-    name: 'Chainlink',
-    symbol: 'LINK',
-    price: '$18.42',
-    change: '0.92%',
-    isPositive: false,
-    mcap: '$10.8B',
-    rank: '#14',
-    type: 'ERC-20',
-    icon: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBK5bEEPqpyUpKdk2yUHBEQBelWXwSzAevKPxoOnNMNiPJv3ZOkFERrIwXuAWuqJ7c81CRshRTxdHDRGB4iyEDjIT2LH3YfSg98tRrfeIutIl-6FR4uc9CaL10lAYVM0ta5SPD37kBINhdDmSa4y3aoNnwlSRt3rrVdhcAXc--i9Qy6HNtXP8Io9R_iix898SvK94oa2uea9TXSb8vw6-IcQPVzYSn7Al8D6ZlTMeiAgUD0oPXcmkI2_zG4b_8c7kTvQ6wYaaYXTIo',
-    balance: '25.00 LINK',
-    balanceFiat: '≈ $460.50',
-    stats: {
-      marketCap: '$10,800,000,000',
-      volume: '$580,000,000',
-      supply: '587,000,000 LINK',
-      ath: '$52.88',
-      atl: '$0.12'
-    }
-  },
-  polygon: {
-    name: 'Polygon',
-    symbol: 'MATIC',
-    price: '$0.812',
-    change: '3.14%',
-    isPositive: true,
-    mcap: '$7.9B',
-    rank: '#18',
-    type: 'MATIC',
-    icon: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBdSj2BsXYVZgNWP2BdAjdJwQxTzGk1B3XTju-izVFfXJu0Hfw2HvnZYt2k_Wx6qNADoyidX6iVBIorjofFxncRMJu-U0iECFqsMSI7-OlGFxtIusu9DHlzZutiV8iKsBx7CYijXB_IOdaQvmJN4c3D9yDzflvZ3j1aV4rEB6vx1Ph1NqwWcNPy2Z2fJSidwANEC5iUr7ebJa6mldWxOiKJAS3CEX6nlaM_ClaIhnslF27DGZH8OGGThCP6yfUPQHrMzgdYOG6uWIk',
-    balance: '1200.00 MATIC',
-    balanceFiat: '≈ $974.40',
-    stats: {
-      marketCap: '$7,900,000,000',
-      volume: '$320,000,000',
-      supply: '9,700,000,000 MATIC',
-      ath: '$2.92',
-      atl: '$0.003'
-    }
-  }
-};
 
 export default function CoinDetail() {
   const { coinId } = useParams();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [timeframe, setTimeframe] = useState('1D');
   const [payAmount, setPayAmount] = useState('0.5');
   const [receiveAmount, setReceiveAmount] = useState('0.0002');
-  const [coin, setCoin] = useState<any>(null);
+  const [coin, setCoin] = useState<CoinDetailType | null>(null);
 
   useEffect(() => {
-    if (coinId && COIN_DATA[coinId]) {
-      setCoin(COIN_DATA[coinId]);
+    if (coinId && COIN_DETAILS[coinId]) {
+      setCoin(COIN_DETAILS[coinId]);
     } else {
-        // Fallback or redirect if coin not found
-        // setCoin(COIN_DATA['ethereum']); 
+      setCoin(null);
     }
   }, [coinId]);
 
@@ -132,11 +32,11 @@ export default function CoinDetail() {
   }
 
   const handleSwap = () => {
-    alert(`Swapping ${payAmount} USDC for ${receiveAmount} ${coin.symbol}`);
+    showToast(`Swapping ${payAmount} USDC for ${receiveAmount} ${coin.symbol}`, 'success');
   };
 
   const handleAction = (action: string) => {
-    alert(`${action} mechanism triggered for ${coin.name}`);
+    showToast(`${action} — coming soon for ${coin.name}`, 'info');
   };
 
   return (

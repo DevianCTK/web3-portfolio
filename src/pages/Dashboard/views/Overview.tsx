@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useWalletStore } from '../../../store/useWalletStore';
+import { useToast } from '../../../components/ui/Toast';
 import './Overview.scss';
 
 export default function Overview() {
@@ -7,6 +8,7 @@ export default function Overview() {
   const address = useWalletStore((state) => state.address);
   const balance = useWalletStore((state) => state.balance);
   const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
+  const { showToast } = useToast();
 
   // If connected, we use the real or demo balance
   const parsedBalance = parseFloat(balance || "0");
@@ -21,7 +23,7 @@ export default function Overview() {
   };
 
   const handleAction = (label: string) => {
-    alert(`${label} feature coming soon!`);
+    showToast(`${label} — coming soon!`, 'info');
   };
 
   return (

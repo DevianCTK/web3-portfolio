@@ -1,59 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { TOKEN_LIST } from '../data/mockData';
 import './Markets.scss';
-
-const INITIAL_TOKENS = [
-  {
-    id: 'ethereum',
-    name: 'Ethereum',
-    ticker: 'ETH',
-    price: '$2,482.15',
-    change: '4.21%',
-    isPositive: true,
-    mcap: '$298.4B',
-    icon: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBpyoja6cLvIu2ftlThaeoTDoLjAP9ASGeNjS2eZkfxR6ax-E-2M9vHqwo6i0hrFPsced1LeX2KcQewnhBKOodHRQqlEGMZ3B7-_285vNNHzrHdr3741HyNoskfRSTBHnTcQHcr9K0t7A0bow__npFFIzeNEo2ncY1mjGUEuXMHMX5k2iI1Sp90RR0LjofNDe-QDEmCfYhVYkulHFV7GwKBSox14aaiVXS7PuxTpWIHf8mpIXQp8axp9FlkdUwHIRI0A3fepXcYoro'
-  },
-  {
-    id: 'solana',
-    name: 'Solana',
-    ticker: 'SOL',
-    price: '$104.92',
-    change: '1.45%',
-    isPositive: false,
-    mcap: '$45.2B',
-    icon: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDd5FHfA4Y8dSf-wF9752-3aKWgd9EHPFLDUFj738qe92gLaUq88grVuyb_y9JqQJhSeiuOdxraLEHlLTYsB5R7i9yZBzs8znG811-0grnilv4Y3hvmlb80kDlRzY6jlWxt7JoT70Obw5AzI7u8kFlphYH9-7DU18hIqwdMSNrKjAUwqyzOgA_BWUhfs9PzfBdwK0lDpKKRHM5nNM5OKZix2rQPmcE2x9sJnQDrZO-Jki7O5ibPraLIJmthPs3j7c1tlG_rUFoDrpc'
-  },
-  {
-    id: 'arbitrum',
-    name: 'Arbitrum',
-    ticker: 'ARB',
-    price: '$1.88',
-    change: '12.8%',
-    isPositive: true,
-    mcap: '$2.4B',
-    icon: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBSe587TFd77-Y6YccfqtQKEc3VLOv99vjxymaybPZfPUZUfZdpBir8Sj2IDOboAXczYG2JdUM9YQ7tdKr4YJj2g0IqqFKpQ-OSByj9YltruSlZYCRcrFsndaET0v1ME_rm4gxUWCeMhnpiKpfAALpvAm5AHKzYg-PoapRexuh2gwd5bMAm4EYjfECZ3DL7AJdqotZKe0Z44EEBC6hs7j0hK-5rvdyWwaLvk4WhZ-eMiZFy5fzEGaylZBH0_3xvOacdumby35p7fc4'
-  },
-  {
-    id: 'chainlink',
-    name: 'Chainlink',
-    ticker: 'LINK',
-    price: '$18.42',
-    change: '0.92%',
-    isPositive: false,
-    mcap: '$10.8B',
-    icon: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBK5bEEPqpyUpKdk2yUHBEQBelWXwSzAevKPxoOnNMNiPJv3ZOkFERrIwXuAWuqJ7c81CRshRTxdHDRGB4iyEDjIT2LH3YfSg98tRrfeIutIl-6FR4uc9CaL10lAYVM0ta5SPD37kBINhdDmSa4y3aoNnwlSRt3rrVdhcAXc--i9Qy6HNtXP8Io9R_iix898SvK94oa2uea9TXSb8vw6-IcQPVzYSn7Al8D6ZlTMeiAgUD0oPXcmkI2_zG4b_8c7kTvQ6wYaaYXTIo'
-  },
-  {
-    id: 'polygon',
-    name: 'Polygon',
-    ticker: 'MATIC',
-    price: '$0.812',
-    change: '3.14%',
-    isPositive: true,
-    mcap: '$7.9B',
-    icon: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBdSj2BsXYVZgNWP2BdAjdJwQxTzGk1B3XTju-izVFfXJu0Hfw2HvnZYt2k_Wx6qNADoyidX6iVBIorjofFxncRMJu-U0iECFqsMSI7-OlGFxtIusu9DHlzZutiV8iKsBx7CYijXB_IOdaQvmJN4c3D9yDzflvZ3j1aV4rEB6vx1Ph1NqwWcNPy2Z2fJSidwANEC5iUr7ebJa6mldWxOiKJAS3CEX6nlaM_ClaIhnslF27DGZH8OGGThCP6yfUPQHrMzgdYOG6uWIk'
-  }
-];
 
 export default function Markets() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -69,10 +17,10 @@ export default function Markets() {
 
   const filteredTokens = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
-    if (!query) return INITIAL_TOKENS;
-    return INITIAL_TOKENS.filter(token => 
+    if (!query) return TOKEN_LIST;
+    return TOKEN_LIST.filter(token =>
       token.name.toLowerCase().includes(query) ||
-      token.ticker.toLowerCase().includes(query)
+      token.symbol.toLowerCase().includes(query)
     );
   }, [searchQuery]);
 
@@ -117,15 +65,15 @@ export default function Markets() {
                 </div>
                 <div className="flex-col">
                   <span className="name">{token.name}</span>
-                  <span className="ticker">{token.ticker}</span>
+                  <span className="ticker">{token.symbol}</span>
                 </div>
               </div>
-              <div className="col-price">{token.price}</div>
+              <div className="col-price">${token.price.toLocaleString()}</div>
               <div className={`col-change ${token.isPositive ? 'positive' : 'negative'}`}>
                 <span className="material-symbols-outlined">
                   {token.isPositive ? 'arrow_upward' : 'arrow_downward'}
                 </span>
-                {token.change}
+                {token.change}%
               </div>
               <div className="col-mcap">{token.mcap}</div>
               <div className="col-action">
@@ -133,7 +81,7 @@ export default function Markets() {
                   className="btn-trade" 
                   onClick={(e) => { 
                     e.stopPropagation(); 
-                    navigate(`/trade/${token.id}`); 
+                    navigate('/dashboard/swap'); 
                   }}
                 >
                   Trade

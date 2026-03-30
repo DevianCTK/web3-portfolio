@@ -1,6 +1,8 @@
+import { useToast } from '../../../components/ui/Toast';
 import './Activity.scss';
 
 export default function Activity() {
+  const { showToast } = useToast();
   return (
     <div className="activity-page">
       <section className="activity-content">
@@ -12,11 +14,11 @@ export default function Activity() {
               <h1 className="title">Activity</h1>
             </div>
             <div className="actions">
-              <button className="btn-action">
+              <button className="btn-action" onClick={() => showToast('Filter applied: showing all transactions', 'info')}>
                 <span className="material-symbols-outlined">filter_list</span>
                 <span>Filter</span>
               </button>
-              <button className="btn-action">
+              <button className="btn-action" onClick={() => showToast('Transaction history exported as CSV', 'success')}>
                 <span className="material-symbols-outlined">download</span>
                 <span>Export CSV</span>
               </button>
@@ -72,7 +74,7 @@ export default function Activity() {
                     </span>
                   </td>
                   <td className="col-link text-right">
-                    <button className="material-symbols-outlined icon-link">open_in_new</button>
+                    <button className="material-symbols-outlined icon-link" onClick={() => showToast('Opening transaction on Etherscan...', 'info')}>open_in_new</button>
                   </td>
                 </tr>
 
@@ -112,7 +114,7 @@ export default function Activity() {
                     </span>
                   </td>
                   <td className="col-link text-right">
-                    <button className="material-symbols-outlined icon-link">open_in_new</button>
+                    <button className="material-symbols-outlined icon-link" onClick={() => showToast('Opening transaction on Etherscan...', 'info')}>open_in_new</button>
                   </td>
                 </tr>
 
@@ -151,7 +153,7 @@ export default function Activity() {
                     </span>
                   </td>
                   <td className="col-link text-right">
-                    <button className="material-symbols-outlined icon-link">open_in_new</button>
+                    <button className="material-symbols-outlined icon-link" onClick={() => showToast('Opening transaction on Etherscan...', 'info')}>open_in_new</button>
                   </td>
                 </tr>
 
@@ -190,7 +192,7 @@ export default function Activity() {
                     </span>
                   </td>
                   <td className="col-link text-right">
-                    <button className="material-symbols-outlined icon-link">open_in_new</button>
+                    <button className="material-symbols-outlined icon-link" onClick={() => showToast('Opening transaction on Etherscan...', 'info')}>open_in_new</button>
                   </td>
                 </tr>
               </tbody>
@@ -199,7 +201,7 @@ export default function Activity() {
 
           {/* Pagination/Load More */}
           <div className="pagination">
-            <button className="btn-load-more group">
+            <button className="btn-load-more group" onClick={() => showToast('No more transactions to load', 'info')}>
               <span className="text">View Older Transactions</span>
               <span className="material-symbols-outlined icon">keyboard_double_arrow_down</span>
             </button>

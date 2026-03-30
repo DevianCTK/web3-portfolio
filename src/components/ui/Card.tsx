@@ -1,13 +1,14 @@
-import React, { HTMLAttributes } from 'react';
+import { type HTMLAttributes, type ReactNode } from 'react';
+import './ui.scss';
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export function Card({ children, className = '', ...props }: CardProps) {
   return (
-    <div 
-      className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden ${className}`}
+    <div
+      className={`ui-card ${className}`}
       {...props}
     >
       {children}

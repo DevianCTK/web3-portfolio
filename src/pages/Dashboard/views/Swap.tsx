@@ -1,32 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWalletStore } from '../../../store/useWalletStore';
+import { SWAP_TOKENS } from '../../../data/mockData';
 import '../../Swap/Swap.scss';
-
-const TOKENS = {
-  ETH: {
-    symbol: 'ETH',
-    name: 'Ethereum',
-    price: 2450.12,
-    balance: 12.45,
-    icon: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDdUoHGeG2HAho_kJujKJxcac-WaOyB6MICdgoECPefp0GMSlVJQheMYNAiYKJxX0H83ztsOL-qq8htXU4yAPXmuv9SIHhEWd70eE60i57-ndc-YZ-Zs43WlV2MaFx1ua2GJtBWbAIalq1RtlxJtGAyC_jmtm4r-SQghN0Txj_fMegjPmVgYiAuwAezEOfBOu_Cv2QjmxPccTW4AqpJOsOMHKzCs9KBeuDg0vzz07Igm_aqY7hE28RoWspE_G1DDOZkccaMqN4sd8k'
-  },
-  USDC: {
-    symbol: 'USDC',
-    name: 'USD Coin',
-    price: 1.00,
-    balance: 0.00,
-    icon: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBqbU2JDSCb1ddKRPLJl3ZFS5SGeI9u6u5IURc8FWHs_dD_QaGvuNoQjF92nhndy7bjc3ts7e_eOkosVpjdOTDRyEoYLonvXMhYv5jnMc1LGKi9b-1WisXnGYQcXtpi0xLPQK5BKmvYru4eDMycBKNWOr2gmYNKnB1wYptUMZCgMLo65WZZjANB_xMg15D6hG7rTO_OPxB2_LKNdJhccrVOKMB7-g5-G0tfcFB8KW5K3TdFikeTWxr3J38UKz8YWetQf4mq_-I0B7U'
-  }
-};
 
 export default function Swap() {
   const navigate = useNavigate();
   const address = useWalletStore((state) => state.address);
   const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
 
-  const [payToken, setPayToken] = useState(TOKENS.ETH);
-  const [receiveToken, setReceiveToken] = useState(TOKENS.USDC);
+  const [payToken, setPayToken] = useState(SWAP_TOKENS.ETH);
+  const [receiveToken, setReceiveToken] = useState(SWAP_TOKENS.USDC);
   const [payAmount, setPayAmount] = useState('');
   const [receiveAmount, setReceiveAmount] = useState('');
 
