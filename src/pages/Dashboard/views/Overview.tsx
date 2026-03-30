@@ -1,30 +1,22 @@
 import { useNavigate } from 'react-router-dom';
 import { useWalletStore } from '../../../store/useWalletStore';
-import { useToast } from '../../../components/ui/Toast';
+import { useAppData } from '../../../hooks/useAppData';
 import './Overview.scss';
 
 export default function Overview() {
   const navigate = useNavigate();
-  const address = useWalletStore((state) => state.address);
-  const balance = useWalletStore((state) => state.balance);
   const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
-  const { showToast } = useToast();
-
-  // If connected, we use the real or demo balance
-  const parsedBalance = parseFloat(balance || "0");
-  const displayUsd = balance ? (parsedBalance * 2450.12).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00";
+  const { mode, balanceUsd, totalChange, totalChangePositive, overviewTransactions, assetAllocation } = useAppData();
 
   const handleAuthAction = () => {
-    if (!address) {
+    if (mode === 'disconnected') {
       setConnectModalOpen(true);
     } else {
       navigate('/dashboard/swap');
     }
   };
 
-  const handleAction = (label: string) => {
-    showToast(`${label} — coming soon!`, 'info');
-  };
+  const isWalletMode = mode === 'wallet';
 
   return (
     <div className="overview-view">
@@ -34,12 +26,16 @@ export default function Overview() {
         <div className="net-worth-card group">
           <div className="content-left">
             <p className="label">Total Net Worth</p>
-            <h1 className="amount">${displayUsd}</h1>
+            <h1 className="amount">{balanceUsd}</h1>
             <div className="growth">
-              <span className="badge">
-                <span className="material-symbols-outlined">trending_up</span>
-                +12.4%
-              </span>
+              {totalChange !== '--' && (
+                <span className="badge">
+                  <span className="material-symbols-outlined">
+                    {totalChangePositive ? 'trending_up' : 'trending_down'}
+                  </span>
+                  {totalChange}
+                </span>
+              )}
               <span className="context">vs last 30 days</span>
             </div>
           </div>
@@ -61,29 +57,41 @@ export default function Overview() {
 
         {/* Quick Actions */}
         <div className="quick-actions">
-          <button className="action-btn" onClick={handleAuthAction}>
+          <button
+            className="action-btn"
+            onClick={isWalletMode ? undefined : handleAuthAction}
+            disabled={isWalletMode}
+            title={isWalletMode ? 'Not available in wallet mode' : undefined}
+            style={isWalletMode ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
+          >
             <div className="icon-circle send">
               <span className="material-symbols-outlined">north_east</span>
             </div>
             <span className="label">Send</span>
           </button>
-          <button className="action-btn" onClick={handleAuthAction}>
+          <button
+            className="action-btn"
+            onClick={isWalletMode ? undefined : handleAuthAction}
+            disabled={isWalletMode}
+            title={isWalletMode ? 'Not available in wallet mode' : undefined}
+            style={isWalletMode ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
+          >
             <div className="icon-circle receive">
               <span className="material-symbols-outlined">south_west</span>
             </div>
             <span className="label">Receive</span>
           </button>
-          <button className="action-btn" onClick={() => navigate('/dashboard/swap')}>
+          <button
+            className="action-btn"
+            onClick={isWalletMode ? undefined : () => navigate('/dashboard/swap')}
+            disabled={isWalletMode}
+            title={isWalletMode ? 'Not available in wallet mode' : undefined}
+            style={isWalletMode ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
+          >
             <div className="icon-circle swap">
               <span className="material-symbols-outlined">swap_horiz</span>
             </div>
             <span className="label">Swap</span>
-          </button>
-          <button className="action-btn" onClick={() => handleAction('Add Token')}>
-            <div className="icon-circle add">
-              <span className="material-symbols-outlined">add</span>
-            </div>
-            <span className="label">Add Token</span>
           </button>
         </div>
       </div>
@@ -94,86 +102,49 @@ export default function Overview() {
         <div className="transactions-table">
           <div className="table-header">
             <h3>Recent Transactions</h3>
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/dashboard/activity'); }}>View All</a>
+            {overviewTransactions.length > 0 && (
+              <button className="text-primary text-sm hover:underline" onClick={() => navigate('/dashboard/activity')}>View All</button>
+            )}
           </div>
           <div className="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Action</th>
-                  <th>Asset</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: 'right' }}>Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <div className="action-info">
-                      <div className="icon-box received">
-                        <span className="material-symbols-outlined">call_received</span>
-                      </div>
-                      <span>Received</span>
-                    </div>
-                  </td>
-                  <td className="asset">Ethereum</td>
-                  <td className="amount">1.42 ETH</td>
-                  <td>
-                    <span className="status-badge completed">Completed</span>
-                  </td>
-                  <td className="time">2 mins ago</td>
-                </tr>
-                <tr>
-                  <td>
-                    <div className="action-info">
-                      <div className="icon-box swap">
-                        <span className="material-symbols-outlined">swap_horiz</span>
-                      </div>
-                      <span>Swap</span>
-                    </div>
-                  </td>
-                  <td className="asset">USDC → ETH</td>
-                  <td className="amount">$5,000.00</td>
-                  <td>
-                    <span className="status-badge completed">Completed</span>
-                  </td>
-                  <td className="time">1 hour ago</td>
-                </tr>
-                <tr>
-                  <td>
-                    <div className="action-info">
-                      <div className="icon-box sent">
-                        <span className="material-symbols-outlined">call_made</span>
-                      </div>
-                      <span>Sent</span>
-                    </div>
-                  </td>
-                  <td className="asset">Solana</td>
-                  <td className="amount">42.00 SOL</td>
-                  <td>
-                    <span className="status-badge pending">Pending</span>
-                  </td>
-                  <td className="time">3 hours ago</td>
-                </tr>
-                <tr>
-                  <td>
-                    <div className="action-info">
-                      <div className="icon-box received">
-                        <span className="material-symbols-outlined">call_received</span>
-                      </div>
-                      <span>Received</span>
-                    </div>
-                  </td>
-                  <td className="asset">Chainlink</td>
-                  <td className="amount">150.0 LINK</td>
-                  <td>
-                    <span className="status-badge completed">Completed</span>
-                  </td>
-                  <td className="time">Yesterday</td>
-                </tr>
-              </tbody>
-            </table>
+            {overviewTransactions.length > 0 ? (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Action</th>
+                    <th>Asset</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th style={{ textAlign: 'right' }}>Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {overviewTransactions.map((tx, i) => (
+                    <tr key={i}>
+                      <td>
+                        <div className="action-info">
+                          <div className={`icon-box ${tx.actionClass}`}>
+                            <span className="material-symbols-outlined">{tx.actionIcon}</span>
+                          </div>
+                          <span>{tx.action}</span>
+                        </div>
+                      </td>
+                      <td className="asset">{tx.asset}</td>
+                      <td className="amount">{tx.amount}</td>
+                      <td>
+                        <span className={`status-badge ${tx.statusClass}`}>{tx.status}</span>
+                      </td>
+                      <td className="time">{tx.time}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 gap-2 opacity-50">
+                <span className="material-symbols-outlined text-3xl">receipt_long</span>
+                <p className="text-sm">{mode === 'wallet' ? 'No on-chain transaction history available' : 'Connect wallet to view transactions'}</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -181,43 +152,31 @@ export default function Overview() {
         <div className="sidebar-content">
           <div className="asset-allocation">
             <h3>Asset Allocation</h3>
-            <div className="allocation-list">
-              <div className="alloc-item">
-                <div className="info">
-                  <div className="dot eth"></div>
-                  <span>Ethereum</span>
-                </div>
-                <span className="percent">54.2%</span>
+            {assetAllocation.length > 0 ? (
+              <div className="allocation-list">
+                {assetAllocation.map((item, i) => (
+                  <div className="alloc-item" key={i}>
+                    <div className="info">
+                      <div className={`dot ${item.dotClass}`}></div>
+                      <span>{item.label}</span>
+                    </div>
+                    <span className="percent">{item.percent}</span>
+                  </div>
+                ))}
               </div>
-              <div className="alloc-item">
-                <div className="info">
-                  <div className="dot stable"></div>
-                  <span>Stablecoins</span>
-                </div>
-                <span className="percent">28.9%</span>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 gap-2 opacity-50">
+                <span className="material-symbols-outlined text-2xl">pie_chart</span>
+                <p className="text-sm">{mode === 'wallet' ? 'No assets to display' : 'Connect wallet to view allocation'}</p>
               </div>
-              <div className="alloc-item">
-                <div className="info">
-                  <div className="dot defi"></div>
-                  <span>DeFi Assets</span>
-                </div>
-                <span className="percent">12.5%</span>
-              </div>
-              <div className="alloc-item">
-                <div className="info">
-                  <div className="dot other"></div>
-                  <span>Other</span>
-                </div>
-                <span className="percent">4.4%</span>
-              </div>
-            </div>
-            
+            )}
+
             <div className="analysis-btn">
               <button onClick={() => navigate('/dashboard/portfolio')}>Portfolio Analysis</button>
             </div>
           </div>
 
-          <div className="security-banner" onClick={() => handleAction('Security Center')}>
+          <div className="security-banner">
             <div className="content">
               <h4>Shield Active</h4>
               <p>Your wallet is being monitored for suspicious approval requests.</p>

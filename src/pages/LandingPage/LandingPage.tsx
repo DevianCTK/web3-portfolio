@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../../hooks/useWallet';
 import { useWalletStore } from '../../store/useWalletStore';
 import './LandingPage.scss';
@@ -5,6 +6,7 @@ import './LandingPage.scss';
 export default function LandingPage() {
   const { isConnected } = useWallet();
   const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
+  const navigate = useNavigate();
 
   return (
     <>
@@ -29,12 +31,16 @@ export default function LandingPage() {
                 Experience sovereign navigation through the decentralized frontier. Swap, earn, and govern with the speed of a high-performance terminal and the security of a digital vault.
               </p>
               <div className="hero-actions">
-                {!isConnected && (
+                {!isConnected ? (
                   <button onClick={() => setConnectModalOpen(true)} className="btn-primary">
                     Connect Wallet
                   </button>
+                ) : (
+                  <button onClick={() => navigate('/dashboard')} className="btn-primary">
+                    Go to Dashboard
+                  </button>
                 )}
-                <button className="btn-outline">
+                <button className="btn-outline" onClick={() => navigate('/markets')}>
                   <span className="label">Explore Markets</span>
                   <span className="material-symbols-outlined icon">arrow_forward</span>
                 </button>
@@ -170,9 +176,13 @@ export default function LandingPage() {
             <h2 className="title">Ready to navigate the <br />New Internet?</h2>
             <p className="description">Connect your wallet today and claim your sovereign identity in the Ethereal Edge ecosystem.</p>
             <div className="actions">
-              {!isConnected && (
+              {!isConnected ? (
                 <button onClick={() => setConnectModalOpen(true)} className="btn-primary">
                   Connect Wallet
+                </button>
+              ) : (
+                <button onClick={() => navigate('/dashboard')} className="btn-primary">
+                  Go to Dashboard
                 </button>
               )}
             </div>

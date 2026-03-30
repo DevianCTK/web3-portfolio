@@ -41,7 +41,7 @@
 
     .nav-links {
       display: none;
-      
+
       @media (min-width: 768px) {
         display: flex;
         gap: 1.5rem;
@@ -102,7 +102,7 @@
         color: #e1e2eb;
         width: 12rem;
         outline: none;
-        
+
         &::placeholder {
           color: rgba(255, 255, 255, 0.4);
         }
@@ -149,23 +149,88 @@
       &:hover {
         box-shadow: 0 0 20px rgba(205, 189, 255, 0.3);
       }
-      
+
       &:active {
         transform: scale(0.95);
       }
+    }
 
-      &.connected {
-        background: rgba(255, 255, 255, 0.1);
-        color: #e1e2eb;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: none;
+    .wallet-info-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .mode-badge {
+        font-size: 0.625rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 0.2rem 0.5rem;
+        border-radius: 0.25rem;
+        line-height: 1;
+
+        &.demo {
+          color: #eab308;
+          border: 1px solid rgba(234, 179, 8, 0.2);
+          background: rgba(234, 179, 8, 0.1);
+        }
+
+        &.live {
+          color: #34d399;
+          border: 1px solid rgba(52, 211, 153, 0.2);
+          background: rgba(52, 211, 153, 0.1);
+        }
+      }
+
+      .wallet-details {
+        display: none;
+
+        @media (min-width: 768px) {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          text-align: right;
+        }
+
+        .balance-text {
+          font-size: 0.8125rem;
+          font-weight: 700;
+          color: #e1e2eb;
+        }
+
+        .address-text {
+          font-size: 0.6875rem;
+          color: rgba(203, 195, 217, 0.5);
+          font-family: monospace;
+          margin-top: 0.125rem;
+        }
+      }
+
+      .logout-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(225, 226, 235, 0.7);
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s, border-color 0.2s;
+
+        .material-symbols-outlined {
+          font-size: 1.125rem;
+        }
 
         &:hover {
-          background: rgba(255, 255, 255, 0.2);
+          background: rgba(239, 68, 68, 0.15);
+          border-color: rgba(239, 68, 68, 0.3);
+          color: #ef4444;
         }
-        
-        span {
-          font-family: 'Inter', sans-serif;
+
+        &:active {
+          transform: scale(0.93);
         }
       }
     }

@@ -1,9 +1,24 @@
+import { useState } from 'react';
 import { useWalletStore } from '../../../store/useWalletStore';
+import { useAppData } from '../../../hooks/useAppData';
 import './Portfolio.scss';
 
 export default function Portfolio() {
-  const balance = useWalletStore((state) => state.balance);
-  const displayUsd = balance ? (Number(balance) * 2450.12).toLocaleString() : "0.00";
+  const address = useWalletStore((state) => state.address);
+  const [activeTimeFilter, setActiveTimeFilter] = useState('1W');
+  const { mode, balanceUsd, totalChange, totalChangePositive, portfolioAssets, networkAllocation } = useAppData();
+
+  if (!address) {
+    return (
+      <div className="portfolio-page">
+        <div className="flex flex-col items-center justify-center py-24 gap-4 opacity-60">
+          <span className="material-symbols-outlined text-5xl">account_balance_wallet</span>
+          <h2 className="text-xl font-semibold">Connect your wallet to view portfolio</h2>
+          <p className="text-sm text-gray-400">Your assets and performance will appear here once connected.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="portfolio-page">
@@ -13,19 +28,21 @@ export default function Portfolio() {
           <div>
             <h2 className="title">Total Balance</h2>
             <div className="balance-row">
-              <span className="amount">${displayUsd}</span>
-              <span className="change">
-                <span className="material-symbols-outlined">trending_up</span>
-                +12.4%
-              </span>
+              <span className="amount">{balanceUsd}</span>
+              {totalChange !== '--' && (
+                <span className="change">
+                  <span className="material-symbols-outlined">
+                    {totalChangePositive ? 'trending_up' : 'trending_down'}
+                  </span>
+                  {totalChange}
+                </span>
+              )}
             </div>
           </div>
           <div className="time-filters">
-            <button>1D</button>
-            <button className="active">1W</button>
-            <button>1M</button>
-            <button>1Y</button>
-            <button>ALL</button>
+            {['1D', '1W', '1M', '1Y', 'ALL'].map(t => (
+              <button key={t} className={activeTimeFilter === t ? 'active' : ''} onClick={() => setActiveTimeFilter(t)}>{t}</button>
+            ))}
           </div>
         </div>
 
@@ -39,15 +56,15 @@ export default function Portfolio() {
                 <stop offset="95%" stopColor="#cdbdff" stopOpacity="0"></stop>
               </linearGradient>
             </defs>
-            <path 
-              d="M0,250 C100,240 150,280 250,200 C350,120 400,180 500,140 C600,100 650,50 750,80 C850,110 900,20 1000,40 V300 H0 Z" 
+            <path
+              d="M0,250 C100,240 150,280 250,200 C350,120 400,180 500,140 C600,100 650,50 750,80 C850,110 900,20 1000,40 V300 H0 Z"
               fill="url(#chartGradient)"
             />
-            <path 
-              d="M0,250 C100,240 150,280 250,200 C350,120 400,180 500,140 C600,100 650,50 750,80 C850,110 900,20 1000,40" 
-              fill="none" 
-              stroke="#cdbdff" 
-              strokeLinecap="round" 
+            <path
+              d="M0,250 C100,240 150,280 250,200 C350,120 400,180 500,140 C600,100 650,50 750,80 C850,110 900,20 1000,40"
+              fill="none"
+              stroke="#cdbdff"
+              strokeLinecap="round"
               strokeWidth="3"
             />
             {/* Chart Points */}
@@ -72,92 +89,56 @@ export default function Portfolio() {
       <section className="portfolio-assets">
         <div className="assets-header">
           <h3>Your Assets</h3>
-          <div className="sort-controls">
-            <span>Sort by:</span>
-            <select>
-              <option>Value (High to Low)</option>
-              <option>Balance</option>
-              <option>Name</option>
-            </select>
-          </div>
+          {portfolioAssets.length > 0 && (
+            <div className="sort-controls">
+              <span>Sort by:</span>
+              <select>
+                <option>Value (High to Low)</option>
+                <option>Balance</option>
+                <option>Name</option>
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Asset Table */}
         <div className="assets-table">
-          <div className="table-header">
-            <div className="col-asset">Asset</div>
-            <div className="col-balance">Balance</div>
-            <div className="col-value">Value (USD)</div>
-            <div className="col-change">24h Change</div>
-          </div>
+          {portfolioAssets.length > 0 ? (
+            <>
+              <div className="table-header">
+                <div className="col-asset">Asset</div>
+                <div className="col-balance">Balance</div>
+                <div className="col-value">Value (USD)</div>
+                <div className="col-change">24h Change</div>
+              </div>
 
-          <div className="asset-row">
-            <div className="col-asset">
-              <div className="asset-icon">
-                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCb6S7eJTzRYqtG1tbBOBOdQJm94x3CxsawkQOc1SFZ1v2dEtozvU-6bzpObC9z6sphB3YeL7Ye7kt02WS-zDvNamxXn-DCow13E5LM4MjkUOT_sKhcls7eBp6OzU05Y84h7mGtHXi2Ypbk93Qw6zAp_84tT8xCyWIiqotOG0_4PQgtsJ0ZxrSDe8lmH4m51gR_L92uK7x3cjKUjetZf4NkLHkqR2mwUZk5cMgnxvWtFANmDVfYr5q51uZjkEtPn9Hq-20T3vbKk-A" alt="BTC" />
-              </div>
-              <div className="asset-info">
-                <div className="name">Bitcoin</div>
-                <div className="ticker">BTC / $68,421.10</div>
-              </div>
+              {portfolioAssets.map((asset) => (
+                <div className="asset-row" key={asset.id}>
+                  <div className="col-asset">
+                    <div className="asset-icon">
+                      <img src={asset.icon} alt={asset.ticker} />
+                    </div>
+                    <div className="asset-info">
+                      <div className="name">{asset.name}</div>
+                      <div className="ticker">{asset.ticker} / {asset.priceLabel}</div>
+                    </div>
+                  </div>
+                  <div className="col-balance">{asset.balance}</div>
+                  <div className="col-value">{asset.value}</div>
+                  <div className="col-change">
+                    <div className={`change-badge ${asset.change === '--' ? 'neutral' : asset.isPositive ? 'positive' : 'negative'}`}>
+                      {asset.change}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 gap-3 opacity-50">
+              <span className="material-symbols-outlined text-4xl">account_balance_wallet</span>
+              <p className="text-sm">{mode === 'wallet' ? 'No assets found in your wallet' : 'No assets to display'}</p>
             </div>
-            <div className="col-balance">1.4285</div>
-            <div className="col-value">$97,749.54</div>
-            <div className="col-change">
-              <div className="change-badge positive">+2.45%</div>
-            </div>
-          </div>
-
-          <div className="asset-row">
-            <div className="col-asset">
-              <div className="asset-icon">
-                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBH1dkv2O57w9jnSpIEZOJ0aqQM9RThoJkKqmkdEkJDthS5eW2sCiCenDEiB9emu0xmTyK4N4PudsKycecXluzF4eDzQAw6e9aKibNkggAgB0C7BtZeyFWS0DMUmz8tmiXUPlZSVVcAeADVfd2ogs1wTGu1dojpC6wTxGVgQ_7Qvh4CHhAGiNJtUoJGu9iBTNAeIEfGPiY0467JmU1My96g9Qd7TXQ4pQFcUM52xyy76ado0UY28uCMkgJSokvjGTf1iuO0OhCW7Fw" alt="ETH" />
-              </div>
-              <div className="asset-info">
-                <div className="name">Ethereum</div>
-                <div className="ticker">ETH / $3,842.20</div>
-              </div>
-            </div>
-            <div className="col-balance">8.5000</div>
-            <div className="col-value">$32,658.70</div>
-            <div className="col-change">
-              <div className="change-badge negative">-0.82%</div>
-            </div>
-          </div>
-
-          <div className="asset-row">
-            <div className="col-asset">
-              <div className="asset-icon">
-                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDfei97DqgcrjfSPZSKydItsRpeq5qT9sp63Cjvd_tuA1aewi1jrnNSx_2oLoeClmdRceKdBppcgaW-rmomKqS2T9kitsWtsVEf4JQOGOGYVmrjq8I2lET8gLcfvHjdDxSDb-N-hqS5JvUUCWjY0yEyzix2PG_0SJB9IdmRhSj3FWzmo630zdDePdcNN3xBs49l7NYDB0TZfkEURU0xuDeZXfdds2f6mFd_F_wAJu3o-HyRfNrFC2b91mxhuv3NqEpsATJAZRGKpc" alt="SOL" />
-              </div>
-              <div className="asset-info">
-                <div className="name">Solana</div>
-                <div className="ticker">SOL / $164.55</div>
-              </div>
-            </div>
-            <div className="col-balance">42.1200</div>
-            <div className="col-value">$6,930.84</div>
-            <div className="col-change">
-              <div className="change-badge positive">+12.10%</div>
-            </div>
-          </div>
-
-          <div className="asset-row">
-            <div className="col-asset">
-              <div className="asset-icon">
-                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3NLOTolHeOkZQ-thvtSwkSGYol2ShP91qHc0o7_n_LdesMdZ2qwN3xVjOO5Y3HsZvANs64wKr6-h0NjfEmw60sOnPyq8g1bS8wDq5qcngeiB2fXgz3RkFYwk5z0Ngnq0tXCTVZ2BmPL1zuvOhr37Nv64mQtv2uOIKnx0hlrMi6d-hsqiULN8YXNwMug56VycLYFkYlRwX-KpUpuiWZcMuGrEPvwjnImFex-PF7KOysrOQD971JPhaJdXLXkWTmcucG0S9Kpx-s-U" alt="USDC" />
-              </div>
-              <div className="asset-info">
-                <div className="name">USD Coin</div>
-                <div className="ticker">USDC / $1.00</div>
-              </div>
-            </div>
-            <div className="col-balance">5,501.34</div>
-            <div className="col-value">$5,501.34</div>
-            <div className="col-change">
-              <div className="change-badge neutral">0.00%</div>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -168,47 +149,53 @@ export default function Portfolio() {
           <div className="allocation-content">
             <div className="chart-ring">
               <svg viewBox="0 0 36 36">
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#cdbdff" strokeDasharray="65, 100" strokeWidth="4"></path>
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#bdf4ff" strokeDasharray="25, 100" strokeDashoffset="-65" strokeWidth="4"></path>
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#ffb1c1" strokeDasharray="10, 100" strokeDashoffset="-90" strokeWidth="4"></path>
+                {networkAllocation.map((net, i) => {
+                  const offset = networkAllocation.slice(0, i).reduce((sum, n) => sum + n.percent, 0);
+                  const colors = ['#cdbdff', '#bdf4ff', '#ffb1c1'];
+                  return (
+                    <path
+                      key={net.label}
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke={colors[i] || '#888'}
+                      strokeDasharray={`${net.percent}, ${100 - net.percent}`}
+                      strokeDashoffset={`${-offset}`}
+                      strokeWidth="4"
+                    />
+                  );
+                })}
               </svg>
               <div className="chart-center">
                 <span className="label">Mainnet</span>
-                <span className="value">65%</span>
+                <span className="value">{networkAllocation.length > 0 ? `${networkAllocation[0].percent}%` : '0%'}</span>
               </div>
             </div>
             <div className="allocation-legend">
-              <div className="legend-item">
-                <div className="info">
-                  <div className="dot eth"></div>
-                  <span>Ethereum Mainnet</span>
+              {networkAllocation.length > 0 ? (
+                networkAllocation.map((net) => (
+                  <div className="legend-item" key={net.label}>
+                    <div className="info">
+                      <div className={`dot ${net.dotClass}`}></div>
+                      <span>{net.label}</span>
+                    </div>
+                    <span className="amount">{net.amount}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center justify-center py-4 opacity-50">
+                  <p className="text-sm">No network data available</p>
                 </div>
-                <span className="amount">$92,846.27</span>
-              </div>
-              <div className="legend-item">
-                <div className="info">
-                  <div className="dot sol"></div>
-                  <span>Solana Ecosystem</span>
-                </div>
-                <span className="amount">$35,710.10</span>
-              </div>
-              <div className="legend-item">
-                <div className="info">
-                  <div className="dot arb"></div>
-                  <span>Arbitrum One</span>
-                </div>
-                <span className="amount">$14,284.05</span>
-              </div>
+              )}
             </div>
           </div>
         </div>
-        
+
         <div className="portfolio-health">
           <div>
             <div className="health-header">
               <span className="material-symbols-outlined">auto_awesome</span>
               <h4>Portfolio Health</h4>
-              <p>Your sovereign assets are diversified across 3 networks with a focus on high-liquidity tokens.</p>
+              <p>Your sovereign assets are diversified across {networkAllocation.length} network{networkAllocation.length !== 1 ? 's' : ''} with a focus on high-liquidity tokens.</p>
             </div>
           </div>
           <div className="health-score">

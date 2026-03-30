@@ -1,7 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { COIN_DETAILS } from '../../data/mockData';
+import { useWallet } from '../../hooks/useWallet';
+import { useWalletStore } from '../../store/useWalletStore';
 import { useToast } from '../../components/ui/Toast';
+import { usePrices } from '../../hooks/usePrices';
+import { formatUsd, formatMarketCap } from '../../services/api/priceService';
+import { generateChartData } from '../../services/chartData';
 import type { CoinDetail as CoinDetailType } from '../../data/mockData';
 import './CoinDetail.scss';
 
@@ -9,9 +14,14 @@ export default function CoinDetail() {
   const { coinId } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { isConnected } = useWallet();
+  const mode = useWalletStore((state) => state.mode);
+  const walletBalance = useWalletStore((state) => state.balance);
+  const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
+  const { data: prices } = usePrices();
   const [timeframe, setTimeframe] = useState('1D');
-  const [payAmount, setPayAmount] = useState('0.5');
-  const [receiveAmount, setReceiveAmount] = useState('0.0002');
+  const [payAmount, setPayAmount] = useState('');
+  const [receiveAmount, setReceiveAmount] = useState('');
   const [coin, setCoin] = useState<CoinDetailType | null>(null);
 
   useEffect(() => {
@@ -21,6 +31,56 @@ export default function CoinDetail() {
       setCoin(null);
     }
   }, [coinId]);
+
+  // Derive live price data
+  const livePrice = coinId ? prices?.[coinId] : null;
+  const priceNum = livePrice?.usd ?? (coin ? parseFloat(coin.price.replace(/[$,]/g, '')) : 0);
+  const priceLabel = formatUsd(priceNum);
+  const change24h = livePrice?.usd_24h_change;
+  const changeLabel = change24h != null
+    ? (change24h >= 0 ? '+' : '') + change24h.toFixed(2) + '%'
+    : coin?.change ?? '--';
+  const changePositive = change24h != null ? change24h >= 0 : (coin?.isPositive ?? true);
+  const mcapLabel = livePrice?.usd_market_cap ? formatMarketCap(livePrice.usd_market_cap) : coin?.mcap ?? '--';
+
+  // Derive chart low/high from live price
+  const coinSeed = coinId ? coinId.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 42;
+  const chartData = useMemo(
+    () => generateChartData(priceNum, timeframe, coinSeed),
+    [priceNum, timeframe, coinSeed],
+  );
+  const chartLow = formatUsd(chartData.low);
+  const chartHigh = formatUsd(chartData.high);
+
+  // Mode-aware balance
+  const balanceInfo = useMemo(() => {
+    if (mode === 'demo') {
+      return { main: coin?.balance ?? '--', fiat: coin?.balanceFiat ?? '' };
+    }
+    if (mode === 'wallet') {
+      // Only show real balance for ETH since that's all MetaMask provides
+      if (coinId === 'ethereum') {
+        const ethBal = parseFloat(walletBalance || '0');
+        return {
+          main: ethBal.toFixed(4) + ' ETH',
+          fiat: formatUsd(ethBal * priceNum),
+        };
+      }
+      return { main: 'No balance data', fiat: '' };
+    }
+    return { main: 'Connect wallet to view', fiat: '' };
+  }, [mode, coin, coinId, walletBalance, priceNum]);
+
+  useEffect(() => {
+    if (!payAmount || isNaN(Number(payAmount))) {
+      setReceiveAmount('');
+      return;
+    }
+    if (priceNum > 0) {
+      const calculated = (Number(payAmount) / priceNum).toFixed(6);
+      setReceiveAmount(calculated);
+    }
+  }, [payAmount, priceNum]);
 
   if (!coin) {
     return (
@@ -32,11 +92,12 @@ export default function CoinDetail() {
   }
 
   const handleSwap = () => {
+    if (!isConnected) {
+      setConnectModalOpen(true);
+      return;
+    }
+    if (!payAmount || Number(payAmount) <= 0) return;
     showToast(`Swapping ${payAmount} USDC for ${receiveAmount} ${coin.symbol}`, 'success');
-  };
-
-  const handleAction = (action: string) => {
-    showToast(`${action} — coming soon for ${coin.name}`, 'info');
   };
 
   return (
@@ -65,15 +126,15 @@ export default function CoinDetail() {
 
         <div className="price-info">
           <div className="price-row">
-            <span className="price">{coin.price}</span>
-            <span className={`change ${coin.isPositive ? '' : 'negative'}`}>
+            <span className="price">{priceLabel}</span>
+            <span className={`change ${changePositive ? '' : 'negative'}`}>
               <span className="material-symbols-outlined">
-                {coin.isPositive ? 'arrow_drop_up' : 'arrow_drop_down'}
+                {changePositive ? 'arrow_drop_up' : 'arrow_drop_down'}
               </span>
-              {coin.change}
+              {changeLabel}
             </span>
           </div>
-          <p className="mcap-label">Market Cap: {coin.mcap}</p>
+          <p className="mcap-label">Market Cap: {mcapLabel}</p>
         </div>
       </header>
 
@@ -86,22 +147,14 @@ export default function CoinDetail() {
             <div className="chart-header">
               <div className="timeframe-picker">
                 {['1D', '1W', '1M', '1Y', 'ALL'].map(t => (
-                  <button 
+                  <button
                     key={t}
-                    className={timeframe === t ? 'active' : ''} 
+                    className={timeframe === t ? 'active' : ''}
                     onClick={() => setTimeframe(t)}
                   >
                     {t}
                   </button>
                 ))}
-              </div>
-              <div className="chart-actions">
-                <button onClick={() => handleAction('Compare')}>
-                  <span className="material-symbols-outlined">add_chart</span> Compare
-                </button>
-                <button onClick={() => handleAction('Fullscreen')}>
-                  <span className="material-symbols-outlined">fullscreen</span>
-                </button>
               </div>
             </div>
 
@@ -114,15 +167,15 @@ export default function CoinDetail() {
                     <stop offset="100%" stopColor="#cdbdff" stopOpacity="0"></stop>
                   </linearGradient>
                 </defs>
-                <path d="M0,250 C100,240 150,200 250,180 C350,160 400,220 500,190 C600,160 700,100 800,80 C900,60 950,90 1000,70 L1000,300 L0,300 Z" fill="url(#chartGradient)"></path>
-                <path d="M0,250 C100,240 150,200 250,180 C350,160 400,220 500,190 C600,160 700,100 800,80 C900,60 950,90 1000,70" fill="none" stroke="#cdbdff" strokeLinecap="round" strokeWidth="3"></path>
+                <path d={chartData.areaPath} fill="url(#chartGradient)"></path>
+                <path d={chartData.path} fill="none" stroke="#cdbdff" strokeLinecap="round" strokeWidth="3"></path>
               </svg>
-              
+
               <div className="chart-tooltip">
                 <div className="guide-line"></div>
                 <div className="tooltip-card">
-                  <div className="time">OCT 24, 14:00</div>
-                  <div className="value">$2,581.12</div>
+                  <div className="time">Now</div>
+                  <div className="value">{priceLabel}</div>
                 </div>
               </div>
             </div>
@@ -130,7 +183,7 @@ export default function CoinDetail() {
             <div className="chart-footer">
               <div className="stat">
                 <span className="label">Low (24h)</span>
-                <span className="val">$2,310.12</span>
+                <span className="val">{chartLow}</span>
               </div>
               <div className="range-visual">
                 <div className="bar-bg">
@@ -140,7 +193,7 @@ export default function CoinDetail() {
               </div>
               <div className="stat" style={{ alignItems: 'flex-end' }}>
                 <span className="label">High (24h)</span>
-                <span className="val">$2,605.44</span>
+                <span className="val">{chartHigh}</span>
               </div>
             </div>
           </section>
@@ -150,32 +203,8 @@ export default function CoinDetail() {
             <h3 className="title">About {coin.name}</h3>
             <div className="content">
               <p>
-                {coin.name} is a decentralized, open-source blockchain with smart contract functionality. 
-                <span className="highlight"> {coin.name} ({coin.symbol})</span> is the native cryptocurrency of the platform. 
-                Among cryptocurrencies, {coin.symbol} is second only to Bitcoin in market capitalization.
+                {coin.description}
               </p>
-              <p>
-                The platform was conceived in 2013 by programmer Vitalik Buterin. Following a crowdsale in 2014, the network went live in 2015. 
-                Ethereum allows anyone to deploy permanent and immutable decentralized applications onto it, with which users can interact.
-              </p>
-            </div>
-            <div className="link-grid">
-              <a href="#" className="asset-link" onClick={(e) => { e.preventDefault(); handleAction('Website'); }}>
-                <span className="material-symbols-outlined">language</span>
-                <span>Website</span>
-              </a>
-              <a href="#" className="asset-link" onClick={(e) => { e.preventDefault(); handleAction('Whitepaper'); }}>
-                <span className="material-symbols-outlined">article</span>
-                <span>Whitepaper</span>
-              </a>
-              <a href="#" className="asset-link" onClick={(e) => { e.preventDefault(); handleAction('Explorer'); }}>
-                <span className="material-symbols-outlined">description</span>
-                <span>Explorer</span>
-              </a>
-              <a href="#" className="asset-link" onClick={(e) => { e.preventDefault(); handleAction('Community'); }}>
-                <span className="material-symbols-outlined">forum</span>
-                <span>Community</span>
-              </a>
             </div>
           </section>
         </div>
@@ -186,7 +215,7 @@ export default function CoinDetail() {
           <div className="trade-card">
             <div className="glow"></div>
             <h4 className="title">Trade {coin.symbol}</h4>
-            
+
             <div className="input-section">
               <div className="input-header">
                 <span className="label">You Pay</span>
@@ -210,16 +239,9 @@ export default function CoinDetail() {
             </div>
 
             <div className="swap-divider">
-              <button 
-                className="swap-btn" 
-                onClick={() => {
-                  const temp = payAmount;
-                  setPayAmount(receiveAmount);
-                  setReceiveAmount(temp);
-                }}
-              >
+              <div className="swap-btn">
                 <span className="material-symbols-outlined">swap_vert</span>
-              </button>
+              </div>
             </div>
 
             <div className="input-section mb-large">
@@ -228,18 +250,18 @@ export default function CoinDetail() {
               </div>
               <div className="input-container">
                 <div className="input-row">
-                  <input 
-                    placeholder="0.0" 
-                    type="number" 
-                    value={receiveAmount} 
-                    onChange={(e) => setReceiveAmount(e.target.value)}
+                  <input
+                    placeholder="0.0"
+                    type="number"
+                    value={receiveAmount}
+                    readOnly
                   />
                   <div className="token-display">
                     <span className="token-symbol">{coin.symbol}</span>
                   </div>
                 </div>
                 <div className="input-footer">
-                  <span className="usd-value">≈ ${receiveAmount ? (Number(receiveAmount) * 2450).toFixed(2) : '0.00'}</span>
+                  <span className="usd-value">≈ ${receiveAmount ? (Number(receiveAmount) * priceNum).toFixed(2) : '0.00'}</span>
                 </div>
               </div>
             </div>
@@ -247,7 +269,7 @@ export default function CoinDetail() {
             <div className="swap-details">
               <div className="detail-row">
                 <span className="label">Exchange Rate</span>
-                <span className="value">1 {coin.symbol} = 2,450.12 USDC</span>
+                <span className="value">1 {coin.symbol} = {priceNum.toLocaleString()} USDC</span>
               </div>
               <div className="detail-row">
                 <span className="label">Price Impact</span>
@@ -255,7 +277,9 @@ export default function CoinDetail() {
               </div>
             </div>
 
-            <button className="confirm-btn" onClick={handleSwap}>Swap Now</button>
+            <button className="confirm-btn" onClick={handleSwap}>
+              {!isConnected ? 'Connect Wallet to Swap' : 'Swap Now'}
+            </button>
           </div>
 
           {/* Market Statistics */}
@@ -264,7 +288,7 @@ export default function CoinDetail() {
             <div className="stat-list">
               <div className="row">
                 <span className="label">Market Cap</span>
-                <span className="val">{coin.stats.marketCap}</span>
+                <span className="val">{mcapLabel}</span>
               </div>
               <div className="row">
                 <span className="label">Volume (24h)</span>
@@ -288,12 +312,10 @@ export default function CoinDetail() {
           {/* Portfolio Integration */}
           <div className="balance-card">
             <span className="label">Your Balance</span>
-            <div className="balance-main">{coin.balance}</div>
-            <div className="balance-fiat">{coin.balanceFiat}</div>
-            <div className="actions">
-              <button onClick={() => handleAction('Stake')}>Stake {coin.symbol}</button>
-              <button onClick={() => handleAction('Transfer')}>Transfer</button>
+            <div className="balance-main" style={mode === 'disconnected' ? { fontSize: '0.875rem', opacity: 0.5 } : undefined}>
+              {balanceInfo.main}
             </div>
+            {balanceInfo.fiat && <div className="balance-fiat">{balanceInfo.fiat}</div>}
           </div>
         </aside>
       </div>

@@ -9,16 +9,16 @@ export function useWallet() {
   const { address: wagmiAddress, isConnected: isWagmiConnected, isConnecting: isWagmiConnecting } = useAccount();
   const { connect } = useConnect();
   const { disconnect: wagmiDisconnect } = useDisconnect();
-  
+
   const {
     address,
     balance,
     isConnecting,
-    isDemoMode,
+    mode,
     setAddress,
     setBalance,
     setConnecting,
-    setDemoMode,
+    setMode,
     disconnect: storeDisconnect,
   } = useWalletStore();
 
@@ -26,18 +26,22 @@ export function useWallet() {
     address: wagmiAddress,
   });
 
+  // Sync wagmi wallet state to store (only when not in demo mode)
   useEffect(() => {
-    if (!isDemoMode) {
-      setAddress(wagmiAddress || null);
-      if (balanceData) {
-        const formatted = formatUnits(balanceData.value, balanceData.decimals);
-        setBalance(`${formatted.substring(0, 6)} ${balanceData.symbol}`);
-      } else {
-        setBalance(null);
+    if (mode !== 'demo') {
+      if (isWagmiConnected && wagmiAddress) {
+        setMode('wallet');
+        setAddress(wagmiAddress);
+        if (balanceData) {
+          const formatted = formatUnits(balanceData.value, balanceData.decimals);
+          setBalance(`${formatted.substring(0, 6)} ${balanceData.symbol}`);
+        }
+      } else if (mode === 'wallet') {
+        storeDisconnect();
       }
       setConnecting(isWagmiConnecting);
     }
-  }, [wagmiAddress, isWagmiConnecting, balanceData, isDemoMode, setAddress, setBalance, setConnecting]);
+  }, [wagmiAddress, isWagmiConnected, isWagmiConnecting, balanceData, mode, setAddress, setBalance, setConnecting, setMode, storeDisconnect]);
 
   const handleConnectReal = () => {
     if (checkMetaMaskInstalled()) {
@@ -46,20 +50,21 @@ export function useWallet() {
   };
 
   const handleConnectDemo = () => {
-    setDemoMode(true);
+    setMode('demo');
     setAddress(MOCK_WALLET.address);
     setBalance(MOCK_WALLET.balance);
     setConnecting(false);
   };
 
   const handleDisconnect = () => {
-    if (!isDemoMode) {
+    if (mode === 'wallet') {
       wagmiDisconnect();
     }
     storeDisconnect();
   };
 
-  const isConnected = isWagmiConnected || isDemoMode;
+  const isConnected = mode === 'demo' || mode === 'wallet';
+  const isDemoMode = mode === 'demo';
   const hasMetaMask = checkMetaMaskInstalled();
 
   return {
@@ -68,6 +73,7 @@ export function useWallet() {
     isConnected,
     isConnecting,
     isDemoMode,
+    mode,
     hasMetaMask,
     connectReal: handleConnectReal,
     connectDemo: handleConnectDemo,

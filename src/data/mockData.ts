@@ -50,6 +50,7 @@ export interface CoinDetail {
   icon: string;
   balance: string;
   balanceFiat: string;
+  description: string;
   stats: CoinStats;
 }
 
@@ -265,6 +266,7 @@ export const COIN_DETAILS: Record<string, CoinDetail> = {
     icon: TOKENS.ethereum.icon,
     balance: '12.45 ETH',
     balanceFiat: '≈ $30,518.43',
+    description: 'Ethereum is a decentralized, open-source blockchain with smart contract functionality. Conceived in 2013 by Vitalik Buterin, it went live in 2015 and enables anyone to deploy decentralized applications.',
     stats: {
       marketCap: '$294,510,284,192',
       volume: '$15,204,912,855',
@@ -285,6 +287,7 @@ export const COIN_DETAILS: Record<string, CoinDetail> = {
     icon: TOKENS.solana.icon,
     balance: '150.00 SOL',
     balanceFiat: '≈ $15,738.00',
+    description: 'Solana is a high-performance blockchain known for its speed and low transaction costs. It uses a unique Proof of History consensus mechanism to process thousands of transactions per second.',
     stats: {
       marketCap: '$45,210,000,000',
       volume: '$2,104,000,000',
@@ -305,6 +308,7 @@ export const COIN_DETAILS: Record<string, CoinDetail> = {
     icon: TOKENS.arbitrum.icon,
     balance: '500.00 ARB',
     balanceFiat: '≈ $940.00',
+    description: 'Arbitrum is a Layer 2 scaling solution for Ethereum using optimistic rollups to batch transactions off-chain, reducing costs and increasing throughput while inheriting Ethereum\'s security.',
     stats: {
       marketCap: '$2,400,000,000',
       volume: '$450,000,000',
@@ -325,6 +329,7 @@ export const COIN_DETAILS: Record<string, CoinDetail> = {
     icon: TOKENS.chainlink.icon,
     balance: '25.00 LINK',
     balanceFiat: '≈ $460.50',
+    description: 'Chainlink is a decentralized oracle network that provides real-world data to smart contracts on the blockchain. LINK is the native token used to pay for services within the Chainlink ecosystem.',
     stats: {
       marketCap: '$10,800,000,000',
       volume: '$580,000,000',
@@ -345,6 +350,7 @@ export const COIN_DETAILS: Record<string, CoinDetail> = {
     icon: TOKENS.polygon.icon,
     balance: '1200.00 MATIC',
     balanceFiat: '≈ $974.40',
+    description: 'Polygon is a Layer 2 scaling solution for Ethereum, providing faster and cheaper transactions. It aims to create a multi-chain blockchain ecosystem fully compatible with Ethereum.',
     stats: {
       marketCap: '$7,900,000,000',
       volume: '$320,000,000',

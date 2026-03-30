@@ -18,22 +18,22 @@ export function ConnectWalletModal() {
 
   return (
     <div className="connect-modal-overlay">
-      <div 
-        className="modal-backdrop" 
+      <div
+        className="modal-backdrop"
         onClick={() => setConnectModalOpen(false)}
       ></div>
       <div className="modal-container">
         <div className="modal-content">
           <div className="modal-header">
             <h2>Connect Identity</h2>
-            <button 
+            <button
               className="close-btn"
               onClick={() => setConnectModalOpen(false)}
             >
               <span className="material-symbols-outlined">close</span>
             </button>
           </div>
-          
+
           {!hasMetaMask ? (
             <div className="no-wallet-container">
               <span className="material-symbols-outlined no-wallet-icon">warning</span>
@@ -41,18 +41,18 @@ export function ConnectWalletModal() {
                 <h3>No wallet detected</h3>
                 <p>MetaMask is required for full functionality.</p>
               </div>
-              
+
               <div className="no-wallet-actions">
-                <a 
-                  href="https://metamask.io/download/" 
-                  target="_blank" 
-                  rel="noreferrer" 
+                <a
+                  href="https://metamask.io/download/"
+                  target="_blank"
+                  rel="noreferrer"
                   className="btn-install"
                 >
                   Install MetaMask
                 </a>
-                <button 
-                  onClick={connectDemo} 
+                <button
+                  onClick={connectDemo}
                   className="btn-demo"
                 >
                   Continue with Demo
@@ -62,13 +62,13 @@ export function ConnectWalletModal() {
           ) : (
             <>
               <div className="wallet-list">
-                <button 
+                <button
                   onClick={connectReal}
                   className="wallet-item"
                 >
                   <div className="wallet-info">
                     <div className="wallet-icon">
-                      <img alt="MetaMask" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_qVqpDlzzIwBBYiYPgGrbgEQIc5GwWAcz9kmragoMsKLt1uYFihRYC3YM6HqrRf7SAQ96YVqZUHSBxKpZP69PQOfz_NGNTnRLthmXzZ2qFeiisb7oz6pwpz-u13Oob6o4LCdL2Mi8whmIP3xXbZbh7cleTfYFaA1SYB4uONO8D7SZn8Gz92m4RJaxbla511gqtimnDR_9c_7SdmDVVGo668mpHDKqhWcMHjXA3kSEOMcSVzO4TBIa4ZW6QFne55s6L1QJWvIFbcw"/>
+                      <img alt="MetaMask" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_qVqpDlzzIwBBYiYPgGrbgEQIc5GwWAcz9kmragoMsKLt1uYFihRYC3YM6HqrRf7SAQ96YVqZUHSBxKpZP69PQOfz_NGNTnRLthmXzZ2qFeiisb7oz6pwpz-u13Oob6o4LCdL2Mi8whmIP3xXbZbh7cleTfYFaA1SYB4uONO8D7SZn8Gz92m4RJaxbla511gqtimnDR_9c_7SdmDVVGo668mpHDKqhWcMHjXA3kSEOMcSVzO4TBIa4ZW6QFne55s6L1QJWvIFbcw" />
                     </div>
                     <div className="wallet-text">
                       <div className="name">MetaMask</div>
@@ -78,7 +78,7 @@ export function ConnectWalletModal() {
                   <span className="material-symbols-outlined chevron">chevron_right</span>
                 </button>
               </div>
-              
+
               {isConnecting && (
                 <div className="connecting-status">
                   <div className="spinner-wrapper">
@@ -94,7 +94,7 @@ export function ConnectWalletModal() {
 
               <div className="modal-footer">
                 <p>
-                  By connecting, you agree to our <a href="#">Sovereign Protocol Terms</a>
+                  By connecting, you agree to the Sovereign Protocol Terms.
                 </p>
               </div>
             </>

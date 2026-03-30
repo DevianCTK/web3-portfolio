@@ -1,16 +1,12 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { useWallet } from '../../hooks/useWallet';
 import { useWalletStore } from '../../store/useWalletStore';
 import './Dashboard.scss';
 
 export default function DashboardLayout() {
-  const address = useWalletStore((state) => state.address);
+  const { isConnected, address, mode } = useWallet();
   const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
-
-  const handleConnect = () => {
-    if (!address) {
-      setConnectModalOpen(true);
-    }
-  };
+  const isWalletMode = mode === 'wallet';
 
   return (
     <div className="dashboard-layout">
@@ -25,22 +21,19 @@ export default function DashboardLayout() {
             <span className="material-symbols-outlined">account_balance_wallet</span>
             <span>Portfolio</span>
           </NavLink>
-          <NavLink to="/dashboard/swap" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <span className="material-symbols-outlined">swap_horiz</span>
-            <span>Swap</span>
-          </NavLink>
-          <NavLink to="/dashboard/activity" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <span className="material-symbols-outlined">history</span>
-            <span>Activity</span>
-          </NavLink>
+          {!isWalletMode && (
+            <NavLink to="/dashboard/swap" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <span className="material-symbols-outlined">swap_horiz</span>
+              <span>Swap</span>
+            </NavLink>
+          )}
+          {!isWalletMode && (
+            <NavLink to="/dashboard/activity" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <span className="material-symbols-outlined">history</span>
+              <span>Activity</span>
+            </NavLink>
+          )}
         </nav>
-
-        <div className="sidebar-action">
-          <button className="btn-connect" onClick={handleConnect}>
-            <span className="material-symbols-outlined">add_circle</span>
-            <span>Connect New Wallet</span>
-          </button>
-        </div>
       </aside>
 
       {/* Main Content Area */}
@@ -60,14 +53,18 @@ export default function DashboardLayout() {
           <span className="material-symbols-outlined">account_balance_wallet</span>
           <span className="label">Portfolio</span>
         </NavLink>
-        <NavLink to="/dashboard/swap" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          <span className="material-symbols-outlined">swap_horiz</span>
-          <span className="label">Swap</span>
-        </NavLink>
-        <NavLink to="/dashboard/activity" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          <span className="material-symbols-outlined">history</span>
-          <span className="label">Activity</span>
-        </NavLink>
+        {!isWalletMode && (
+          <NavLink to="/dashboard/swap" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <span className="material-symbols-outlined">swap_horiz</span>
+            <span className="label">Swap</span>
+          </NavLink>
+        )}
+        {!isWalletMode && (
+          <NavLink to="/dashboard/activity" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <span className="material-symbols-outlined">history</span>
+            <span className="label">Activity</span>
+          </NavLink>
+        )}
       </div>
     </div>
   );
