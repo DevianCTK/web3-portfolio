@@ -1,21 +1,36 @@
-import { useState } from 'react';
-import { useWalletStore } from '../../../store/useWalletStore';
+import { useState, useMemo } from 'react';
 import { useAppData } from '../../../hooks/useAppData';
+import { useWalletStore } from '../../../store/useWalletStore';
+import { generateChartData } from '../../../services/chartData';
 import './Portfolio.scss';
 
 export default function Portfolio() {
-  const address = useWalletStore((state) => state.address);
   const [activeTimeFilter, setActiveTimeFilter] = useState('1W');
   const { mode, balanceUsd, totalChange, totalChangePositive, portfolioAssets, networkAllocation } = useAppData();
+  const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
 
-  if (!address) {
+  const balanceNum = useMemo(() => parseFloat(balanceUsd.replace(/[$,]/g, '')) || 100000, [balanceUsd]);
+  const chartData = useMemo(() => generateChartData(balanceNum, activeTimeFilter, 0xdeadbeef), [balanceNum, activeTimeFilter]);
+
+  if (mode === 'disconnected') {
     return (
       <div className="portfolio-page">
-        <div className="flex flex-col items-center justify-center py-24 gap-4 opacity-60">
-          <span className="material-symbols-outlined text-5xl">account_balance_wallet</span>
-          <h2 className="text-xl font-semibold">Connect your wallet to view portfolio</h2>
-          <p className="text-sm text-gray-400">Your assets and performance will appear here once connected.</p>
-        </div>
+        <section className="portfolio-hero">
+          <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '3rem', opacity: 0.4 }}>account_balance_wallet</span>
+            <h2 style={{ marginTop: '1rem', fontSize: '1.25rem' }}>Connect to View Portfolio</h2>
+            <p style={{ opacity: 0.5, marginTop: '0.5rem', fontSize: '0.875rem' }}>
+              Connect your wallet or use Demo Mode to view your portfolio.
+            </p>
+            <button
+              className="btn-primary"
+              style={{ marginTop: '1.5rem' }}
+              onClick={() => setConnectModalOpen(true)}
+            >
+              Connect Wallet
+            </button>
+          </div>
+        </section>
       </div>
     );
   }
@@ -48,7 +63,7 @@ export default function Portfolio() {
 
         <div className="chart-card">
           <div className="chart-bg"></div>
-          {/* SVG Area Chart Custom Implementation */}
+          {/* SVG Area Chart - driven by activeTimeFilter */}
           <svg className="chart-svg" viewBox="0 0 1000 300">
             <defs>
               <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
@@ -57,30 +72,25 @@ export default function Portfolio() {
               </linearGradient>
             </defs>
             <path
-              d="M0,250 C100,240 150,280 250,200 C350,120 400,180 500,140 C600,100 650,50 750,80 C850,110 900,20 1000,40 V300 H0 Z"
+              d={chartData.areaPath}
               fill="url(#chartGradient)"
             />
             <path
-              d="M0,250 C100,240 150,280 250,200 C350,120 400,180 500,140 C600,100 650,50 750,80 C850,110 900,20 1000,40"
+              d={chartData.path}
               fill="none"
               stroke="#cdbdff"
               strokeLinecap="round"
               strokeWidth="3"
             />
-            {/* Chart Points */}
-            <circle cx="250" cy="200" fill="#cdbdff" r="4"></circle>
-            <circle cx="500" cy="140" fill="#cdbdff" r="4"></circle>
-            <circle cx="750" cy="80" fill="#cdbdff" r="4"></circle>
-            <circle cx="1000" cy="40" fill="#cdbdff" r="6" style={{ animation: "pulse 2s infinite" }}></circle>
           </svg>
 
           {/* Chart Labels */}
           <div className="chart-labels">
-            <span>MAY 01</span>
-            <span>MAY 08</span>
-            <span>MAY 15</span>
-            <span>MAY 22</span>
-            <span>MAY 29</span>
+            {[0, Math.floor(chartData.points.length * 0.25), Math.floor(chartData.points.length * 0.5), Math.floor(chartData.points.length * 0.75), chartData.points.length - 1]
+              .map((idx) => chartData.points[idx]?.label ?? '')
+              .map((lbl, i) => (
+                <span key={i}>{lbl}</span>
+              ))}
           </div>
         </div>
       </section>

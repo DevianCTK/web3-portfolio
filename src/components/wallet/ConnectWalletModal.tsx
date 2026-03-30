@@ -34,32 +34,7 @@ export function ConnectWalletModal() {
             </button>
           </div>
 
-          {!hasMetaMask ? (
-            <div className="no-wallet-container">
-              <span className="material-symbols-outlined no-wallet-icon">warning</span>
-              <div className="no-wallet-text">
-                <h3>No wallet detected</h3>
-                <p>MetaMask is required for full functionality.</p>
-              </div>
-
-              <div className="no-wallet-actions">
-                <a
-                  href="https://metamask.io/download/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-install"
-                >
-                  Install MetaMask
-                </a>
-                <button
-                  onClick={connectDemo}
-                  className="btn-demo"
-                >
-                  Continue with Demo
-                </button>
-              </div>
-            </div>
-          ) : (
+          {hasMetaMask ? (
             <>
               <div className="wallet-list">
                 <button
@@ -73,6 +48,22 @@ export function ConnectWalletModal() {
                     <div className="wallet-text">
                       <div className="name">MetaMask</div>
                       <div className="description">Browser Extension</div>
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined chevron">chevron_right</span>
+                </button>
+
+                <button
+                  onClick={connectDemo}
+                  className="wallet-item"
+                >
+                  <div className="wallet-info">
+                    <div className="wallet-icon demo-icon">
+                      <span className="material-symbols-outlined">science</span>
+                    </div>
+                    <div className="wallet-text">
+                      <div className="name">Demo Mode</div>
+                      <div className="description">Explore with mock data</div>
                     </div>
                   </div>
                   <span className="material-symbols-outlined chevron">chevron_right</span>
@@ -98,6 +89,31 @@ export function ConnectWalletModal() {
                 </p>
               </div>
             </>
+          ) : (
+            <div className="no-wallet-container">
+              <span className="material-symbols-outlined no-wallet-icon">warning</span>
+              <div className="no-wallet-text">
+                <h3>No wallet detected</h3>
+                <p>MetaMask is required for full functionality.</p>
+              </div>
+
+              <div className="no-wallet-actions">
+                <a
+                  href="https://metamask.io/download/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-install"
+                >
+                  Install MetaMask
+                </a>
+                <button
+                  onClick={connectDemo}
+                  className="btn-demo"
+                >
+                  Continue with Demo
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

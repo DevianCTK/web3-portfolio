@@ -1,22 +1,33 @@
 import { useNavigate } from 'react-router-dom';
-import { useWalletStore } from '../../../store/useWalletStore';
 import { useAppData } from '../../../hooks/useAppData';
+import { useWalletStore } from '../../../store/useWalletStore';
 import './Overview.scss';
 
 export default function Overview() {
   const navigate = useNavigate();
-  const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
   const { mode, balanceUsd, totalChange, totalChangePositive, overviewTransactions, assetAllocation } = useAppData();
+  const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
 
-  const handleAuthAction = () => {
-    if (mode === 'disconnected') {
-      setConnectModalOpen(true);
-    } else {
-      navigate('/dashboard/swap');
-    }
-  };
-
-  const isWalletMode = mode === 'wallet';
+  if (mode === 'disconnected') {
+    return (
+      <div className="overview-view">
+        <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '3rem', opacity: 0.4 }}>dashboard</span>
+          <h2 style={{ marginTop: '1rem', fontSize: '1.25rem' }}>Connect to View Dashboard</h2>
+          <p style={{ opacity: 0.5, marginTop: '0.5rem', fontSize: '0.875rem' }}>
+            Connect your wallet or use Demo Mode to access the dashboard.
+          </p>
+          <button
+            className="btn-primary"
+            style={{ marginTop: '1.5rem' }}
+            onClick={() => setConnectModalOpen(true)}
+          >
+            Connect Wallet
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="overview-view">
@@ -55,45 +66,6 @@ export default function Overview() {
           <div className="glow-bg"></div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="quick-actions">
-          <button
-            className="action-btn"
-            onClick={isWalletMode ? undefined : handleAuthAction}
-            disabled={isWalletMode}
-            title={isWalletMode ? 'Not available in wallet mode' : undefined}
-            style={isWalletMode ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
-          >
-            <div className="icon-circle send">
-              <span className="material-symbols-outlined">north_east</span>
-            </div>
-            <span className="label">Send</span>
-          </button>
-          <button
-            className="action-btn"
-            onClick={isWalletMode ? undefined : handleAuthAction}
-            disabled={isWalletMode}
-            title={isWalletMode ? 'Not available in wallet mode' : undefined}
-            style={isWalletMode ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
-          >
-            <div className="icon-circle receive">
-              <span className="material-symbols-outlined">south_west</span>
-            </div>
-            <span className="label">Receive</span>
-          </button>
-          <button
-            className="action-btn"
-            onClick={isWalletMode ? undefined : () => navigate('/dashboard/swap')}
-            disabled={isWalletMode}
-            title={isWalletMode ? 'Not available in wallet mode' : undefined}
-            style={isWalletMode ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
-          >
-            <div className="icon-circle swap">
-              <span className="material-symbols-outlined">swap_horiz</span>
-            </div>
-            <span className="label">Swap</span>
-          </button>
-        </div>
       </div>
 
       {/* Dashboard Content Layout */}
@@ -142,7 +114,7 @@ export default function Overview() {
             ) : (
               <div className="flex flex-col items-center justify-center py-12 gap-2 opacity-50">
                 <span className="material-symbols-outlined text-3xl">receipt_long</span>
-                <p className="text-sm">{mode === 'wallet' ? 'No on-chain transaction history available' : 'Connect wallet to view transactions'}</p>
+                <p className="text-sm">{mode === 'wallet' ? 'Activity available in Demo Mode only' : 'No transactions yet'}</p>
               </div>
             )}
           </div>
@@ -167,7 +139,7 @@ export default function Overview() {
             ) : (
               <div className="flex flex-col items-center justify-center py-8 gap-2 opacity-50">
                 <span className="material-symbols-outlined text-2xl">pie_chart</span>
-                <p className="text-sm">{mode === 'wallet' ? 'No assets to display' : 'Connect wallet to view allocation'}</p>
+                <p className="text-sm">{mode === 'wallet' ? 'No on-chain assets to display' : 'No allocation data'}</p>
               </div>
             )}
 

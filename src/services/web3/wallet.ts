@@ -4,5 +4,5 @@ export const checkMetaMaskInstalled = (): boolean => {
 
 export const MOCK_WALLET = {
   address: '0x1234567890abcdef1234567890abcdef1234abcd',
-  balance: '1.25 ETH',
+  balance: '12.45 ETH',
 };

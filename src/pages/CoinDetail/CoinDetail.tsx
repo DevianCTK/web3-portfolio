@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { COIN_DETAILS } from '../../data/mockData';
-import { useWallet } from '../../hooks/useWallet';
 import { useWalletStore } from '../../store/useWalletStore';
 import { useToast } from '../../components/ui/Toast';
 import { usePrices } from '../../hooks/usePrices';
+import { useDemoBalances } from '../../hooks/useDemoBalances';
+import { useDemoTransactions } from '../../hooks/useDemoTransactions';
 import { formatUsd, formatMarketCap } from '../../services/api/priceService';
 import { generateChartData } from '../../services/chartData';
 import type { CoinDetail as CoinDetailType } from '../../data/mockData';
@@ -14,11 +15,12 @@ export default function CoinDetail() {
   const { coinId } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { isConnected } = useWallet();
   const mode = useWalletStore((state) => state.mode);
   const walletBalance = useWalletStore((state) => state.balance);
   const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
   const { data: prices } = usePrices();
+  const { updateBalance } = useDemoBalances();
+  const { addTransaction } = useDemoTransactions();
   const [timeframe, setTimeframe] = useState('1D');
   const [payAmount, setPayAmount] = useState('');
   const [receiveAmount, setReceiveAmount] = useState('');
@@ -92,13 +94,45 @@ export default function CoinDetail() {
   }
 
   const handleSwap = () => {
-    if (!isConnected) {
+    if (mode === 'disconnected') {
       setConnectModalOpen(true);
       return;
     }
+    if (mode === 'wallet') return; // disabled in wallet mode
     if (!payAmount || Number(payAmount) <= 0) return;
-    showToast(`Swapping ${payAmount} USDC for ${receiveAmount} ${coin.symbol}`, 'success');
+
+    const pay = Number(payAmount);
+    const recv = Number(receiveAmount);
+
+    // Update USDC balance (deduct pay)
+    updateBalance('USDC', -pay);
+
+    // Record the transaction
+    const now = new Date();
+    addTransaction({
+      date: now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      time: now.toLocaleTimeString('en-US'),
+      action: 'swap',
+      asset: 'USDC → ' + coin.symbol,
+      amount: recv.toFixed(6) + ' ' + coin.symbol,
+      amountSign: '',
+      fiat: '≈ $' + pay.toFixed(2),
+      status: 'completed',
+      icon: 'sync_alt',
+      iconColor: 'swap',
+    });
+
+    showToast(`Swapped ${payAmount} USDC for ${receiveAmount} ${coin.symbol}`, 'success');
+    setPayAmount('');
+    setReceiveAmount('');
   };
+
+  const swapButtonDisabled = mode === 'wallet' || !payAmount || Number(payAmount) <= 0;
+  const swapButtonText = mode === 'disconnected'
+    ? 'Connect Wallet to Swap'
+    : mode === 'wallet'
+      ? 'Swap available in Demo Mode only'
+      : 'Swap Now';
 
   return (
     <main className="coin-detail-page">
@@ -277,8 +311,16 @@ export default function CoinDetail() {
               </div>
             </div>
 
-            <button className="confirm-btn" onClick={handleSwap}>
-              {!isConnected ? 'Connect Wallet to Swap' : 'Swap Now'}
+            <button
+              className="confirm-btn"
+              onClick={handleSwap}
+              disabled={swapButtonDisabled}
+              style={{
+                opacity: swapButtonDisabled ? 0.5 : 1,
+                cursor: swapButtonDisabled ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {swapButtonText}
             </button>
           </div>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWalletStore } from '../../../store/useWalletStore';
 import { useDemoBalances } from '../../../hooks/useDemoBalances';
@@ -12,7 +12,48 @@ export default function Swap() {
   const { balances, updateBalance } = useDemoBalances();
   const { addTransaction } = useDemoTransactions();
 
-  // Wallet mode guard — swap simulator is demo only
+  // All hooks must be declared before any early return
+  const [paySymbol, setPaySymbol] = useState<'ETH' | 'USDC'>('ETH');
+  const [payAmount, setPayAmount] = useState('');
+  const [isSwapping, setIsSwapping] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  const payTokenData = balances.ETH;
+  const receiveTokenData = balances.USDC;
+  const payToken = paySymbol === 'ETH' ? payTokenData : receiveTokenData;
+  const receiveToken = paySymbol === 'ETH' ? receiveTokenData : payTokenData;
+
+  const receiveAmount = useMemo(() => {
+    if (!payAmount || isNaN(Number(payAmount)) || Number(payAmount) <= 0) return '';
+    const rate = payToken.price / receiveToken.price;
+    return (Number(payAmount) * rate).toFixed(4);
+  }, [payAmount, payToken, receiveToken]);
+
+  // Disconnected guard
+  if (mode === 'disconnected') {
+    return (
+      <main className="swap-page">
+        <section className="swap-container">
+          <div className="swap-card" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '3rem', opacity: 0.4 }}>swap_horiz</span>
+            <h2 style={{ marginTop: '1rem', fontSize: '1.25rem' }}>Connect to Swap</h2>
+            <p style={{ opacity: 0.5, marginTop: '0.5rem', fontSize: '0.875rem' }}>
+              Connect your wallet or use Demo Mode to access the swap simulator.
+            </p>
+            <button
+              className="confirm-btn"
+              style={{ marginTop: '1.5rem' }}
+              onClick={() => useWalletStore.getState().setConnectModalOpen(true)}
+            >
+              Connect Wallet
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  // Wallet mode guard â€” swap simulator is demo only
   if (mode === 'wallet') {
     return (
       <main className="swap-page">
@@ -36,32 +77,9 @@ export default function Swap() {
     );
   }
 
-  const payTokenData = balances.ETH;
-  const receiveTokenData = balances.USDC;
-
-  const [paySymbol, setPaySymbol] = useState<'ETH' | 'USDC'>('ETH');
-  const [payAmount, setPayAmount] = useState('');
-  const [receiveAmount, setReceiveAmount] = useState('');
-  const [isSwapping, setIsSwapping] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-  const payToken = paySymbol === 'ETH' ? payTokenData : receiveTokenData;
-  const receiveToken = paySymbol === 'ETH' ? receiveTokenData : payTokenData;
-
-  useEffect(() => {
-    if (!payAmount || isNaN(Number(payAmount))) {
-      setReceiveAmount('');
-      return;
-    }
-    const rate = payToken.price / receiveToken.price;
-    const calculated = (Number(payAmount) * rate).toFixed(4);
-    setReceiveAmount(calculated);
-  }, [payAmount, payToken, receiveToken]);
-
   const handleSwapTokens = () => {
     setPaySymbol((s) => (s === 'ETH' ? 'USDC' : 'ETH'));
     setPayAmount('');
-    setReceiveAmount('');
   };
 
   const handleMax = () => {
@@ -69,7 +87,6 @@ export default function Swap() {
   };
 
   const handleConfirmSwap = () => {
-    if (mode === 'disconnected') return;
     const pay = Number(payAmount);
     if (!pay || pay <= 0 || pay > payToken.balance) return;
 
@@ -77,20 +94,18 @@ export default function Swap() {
 
     setTimeout(() => {
       const recv = Number(receiveAmount);
-      // Update demo balances
       updateBalance(payToken.symbol, -pay);
       updateBalance(receiveToken.symbol, recv);
 
-      // Record the transaction
       const now = new Date();
       addTransaction({
         date: now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         time: now.toLocaleTimeString('en-US'),
         action: 'swap',
-        asset: payToken.symbol + ' → ' + receiveToken.symbol,
+        asset: payToken.symbol + ' -> ' + receiveToken.symbol,
         amount: recv.toFixed(4) + ' ' + receiveToken.symbol,
         amountSign: '',
-        fiat: '≈ $' + (recv * receiveToken.price).toFixed(2),
+        fiat: '~$' + (recv * receiveToken.price).toFixed(2),
         status: 'completed',
         icon: 'sync_alt',
         iconColor: 'swap',
@@ -99,7 +114,6 @@ export default function Swap() {
       setIsSwapping(false);
       setShowSuccessModal(true);
       setPayAmount('');
-      setReceiveAmount('');
     }, 1500);
   };
 
@@ -122,7 +136,7 @@ export default function Swap() {
             <div className="card-header">
               <h1>Swap Tokens</h1>
               <div className="actions">
-                <button className="icon-btn" onClick={() => { setPayAmount(''); setReceiveAmount(''); }}>
+                <button className="icon-btn" onClick={() => { setPayAmount(''); }}>
                   <span className="material-symbols-outlined">refresh</span>
                 </button>
               </div>
@@ -150,7 +164,7 @@ export default function Swap() {
                   </button>
                 </div>
                 <div className="input-footer">
-                  <span className="usd-value">≈ ${payUsdValue}</span>
+                  <span className="usd-value">~ ${payUsdValue}</span>
                   <button className="max-btn" onClick={handleMax}>Max</button>
                 </div>
               </div>
@@ -179,7 +193,7 @@ export default function Swap() {
                   </button>
                 </div>
                 <div className="input-footer">
-                  <span className="usd-value">≈ ${receiveUsdValue}</span>
+                  <span className="usd-value">~ ${receiveUsdValue}</span>
                 </div>
               </div>
             </div>
@@ -215,7 +229,7 @@ export default function Swap() {
               onClick={handleConfirmSwap}
               style={{
                 opacity: isButtonDisabled ? 0.5 : 1,
-                cursor: isButtonDisabled ? 'not-allowed' : 'pointer'
+                cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
               }}
             >
               {buttonText}

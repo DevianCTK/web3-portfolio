@@ -8,7 +8,7 @@ import './Markets.scss';
 export default function Markets() {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
-  const { data: prices, isLoading } = usePrices();
+  const { data: prices } = usePrices();
 
   const handleCoinClick = (coinId: string) => {
     navigate(`/markets/${coinId}`);

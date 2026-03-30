@@ -5,6 +5,7 @@ import DashboardLayout from './pages/Dashboard/Dashboard';
 import Overview from './pages/Dashboard/views/Overview';
 import Portfolio from './pages/Dashboard/views/Portfolio';
 import Activity from './pages/Dashboard/views/Activity';
+import ActivityDetail from './pages/Dashboard/views/ActivityDetail';
 import DashboardSwap from './pages/Dashboard/views/Swap';
 import Markets from './pages/Markets';
 import CoinDetail from './pages/CoinDetail/CoinDetail';
@@ -24,6 +25,7 @@ function App() {
             <Route path="portfolio" element={<Portfolio />} />
             <Route path="swap" element={<DashboardSwap />} />
             <Route path="activity" element={<Activity />} />
+            <Route path="activity/:txId" element={<ActivityDetail />} />
           </Route>
           {/* Redirect legacy /swap to dashboard swap */}
           <Route path="/swap" element={<Navigate to="/dashboard/swap" replace />} />

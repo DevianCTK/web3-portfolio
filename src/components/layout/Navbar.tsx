@@ -9,8 +9,6 @@ export function Navbar() {
 
   const handleLogout = () => {
     // Clear demo localStorage data on logout
-    localStorage.removeItem('demo-transactions');
-    localStorage.removeItem('demo-balances');
     disconnect();
   };
 
@@ -25,7 +23,7 @@ export function Navbar() {
           </NavLink>
           <nav className="nav-links">
             <NavLink to="/dashboard" className={({ isActive }) => isActive ? "active" : ""}>Dashboard</NavLink>
-            {mode !== 'wallet' && <NavLink to="/dashboard/swap" className={({ isActive }) => isActive ? "active" : ""}>Swap</NavLink>}
+            <NavLink to="/dashboard/swap" className={({ isActive }) => isActive ? "active" : ""}>Swap</NavLink>
             <NavLink to="/markets" className={({ isActive }) => isActive ? "active" : ""}>Markets</NavLink>
           </nav>
         </div>
@@ -43,7 +41,9 @@ export function Navbar() {
               {mode === 'wallet' && <span className="mode-badge live">Live</span>}
               <div className="wallet-details">
                 <span className="balance-text">{balance || '0.00 ETH'}</span>
-                <span className="address-text">{address?.slice(0, 6)}...{address?.slice(-4)}</span>
+                <span className="address-text">
+                  {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Demo Wallet'}
+                </span>
               </div>
               <button className="logout-btn" onClick={handleLogout} title="Disconnect and return to landing">
                 <span className="material-symbols-outlined">logout</span>
