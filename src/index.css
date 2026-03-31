@@ -89,4 +89,54 @@
   .primary-glow:hover {
     box-shadow: 0 0 20px rgba(205, 189, 255, 0.3);
   }
+
+  /* Token icon normalization
+     - Make all token images 24x24
+     - Fully rounded
+     - Remove container circles, borders, and shadows so icons look consistent
+  */
+  .asset-icon img,
+  .token-icon img,
+  .token-icon-small img,
+  .token-selector .token-icon,
+  .token-selector .token-icon img,
+  .token-option-rich img,
+  .token-dropdown img,
+  .legend-item img,
+  .icon-wrapper img,
+  .pair .icon-wrapper img,
+  .icon-box img {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+    border-radius: 9999px !important;
+    object-fit: cover !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+
+  /* Remove any background/border on common token icon wrappers */
+  .asset-icon,
+  .token-icon,
+  .token-icon-small,
+  .token-selector .token-icon,
+  .token-option-rich,
+  .icon-wrapper,
+  .icon-box {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
 }

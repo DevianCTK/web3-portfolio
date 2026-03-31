@@ -29,6 +29,37 @@
       gap: 2.5rem;
       /* space-y-10 */
     }
+
+    .activity-pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid rgba(73, 68, 86, 0.06);
+
+      .pagination-info {
+        color: var(--color-on-surface-variant);
+        font-size: 0.9rem;
+      }
+
+      .pagination-controls {
+        display: flex;
+        align-items: center;
+
+        .btn-link {
+          background: none;
+          border: none;
+          color: var(--color-on-surface);
+          padding: 0.5rem 0.75rem;
+          cursor: pointer;
+
+          &:disabled {
+            opacity: 0.45;
+            cursor: default;
+          }
+        }
+      }
+    }
   }
 
   .page-header {
@@ -519,6 +550,30 @@
 
     .row:last-child {
       border-bottom: none;
+    }
+  }
+
+  /* Back button / ghost button styling for Activity header */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--color-primary);
+      border: 1px solid rgba(205, 189, 255, 0.08);
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .btn-ghost:hover {
+      background: rgba(205, 189, 255, 0.04);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
     }
   }
 }

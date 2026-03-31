@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppData } from '../../../hooks/useAppData';
+import { TOKENS, SWAP_TOKENS, PORTFOLIO_ASSETS } from '../../../data/mockData';
 import './Activity.scss';
 
 export default function ActivityDetail() {
@@ -44,7 +45,54 @@ export default function ActivityDetail() {
                         </div>
                         <div className="row">
                             <div className="label">Asset</div>
-                            <div className="value">{tx.asset}</div>
+                            <div className="value" style={{ textAlign: 'right' }}>
+                                {/* Render swap-like assets with icons: e.g. [USDC icon] USDC → [ARB icon] ARB */}
+                                {(() => {
+                                    const parts = tx.asset.split(/\s*→\s*|\s*->\s*/).map(p => p.trim());
+                                    const combined = [
+                                        ...Object.values(TOKENS),
+                                        ...Object.values(SWAP_TOKENS),
+                                        ...PORTFOLIO_ASSETS.map(a => ({ symbol: a.ticker, name: a.name, icon: a.icon })),
+                                    ];
+
+                                    const renderSegment = (segment: string, key: string) => {
+                                        const bySymbol = combined.find(t => t.symbol && t.symbol.toLowerCase() === segment.toLowerCase());
+                                        if (bySymbol) {
+                                            return (
+                                                <span key={key} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                                                    <img src={bySymbol.icon} alt={bySymbol.symbol} style={{ width: 24, height: 24, borderRadius: 9999, objectFit: 'cover' }} />
+                                                    <span>{bySymbol.symbol}</span>
+                                                </span>
+                                            );
+                                        }
+
+                                        const byInclusion = combined.find(t => (t.symbol && segment.toLowerCase().includes(t.symbol.toLowerCase())) || (t.name && t.name.toLowerCase().includes(segment.toLowerCase())));
+                                        if (byInclusion) {
+                                            return (
+                                                <span key={key} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                                                    <img src={byInclusion.icon} alt={byInclusion.symbol} style={{ width: 24, height: 24, borderRadius: 9999, objectFit: 'cover' }} />
+                                                    <span>{byInclusion.symbol}</span>
+                                                </span>
+                                            );
+                                        }
+
+                                        return <span key={key}>{segment}</span>;
+                                    };
+
+                                    return parts.length > 1 ? (
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                                            {parts.map((seg, idx) => (
+                                                <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                                    {renderSegment(seg, `seg-${idx}`)}
+                                                    {idx < parts.length - 1 && <span style={{ opacity: 0.8 }}>→</span>}
+                                                </span>
+                                            ))}
+                                        </span>
+                                    ) : (
+                                        renderSegment(parts[0], 'seg-0')
+                                    );
+                                })()}
+                            </div>
                         </div>
                         <div className="row">
                             <div className="label">Amount</div>

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAppData } from '../../../hooks/useAppData';
+import { TOKENS, SWAP_TOKENS, PORTFOLIO_ASSETS } from '../../../data/mockData';
 import { useWalletStore } from '../../../store/useWalletStore';
 import './Overview.scss';
 
@@ -91,24 +92,71 @@ export default function Overview() {
                   </tr>
                 </thead>
                 <tbody>
-                  {overviewTransactions.map((tx, i) => (
-                    <tr key={i}>
-                      <td>
-                        <div className="action-info">
-                          <div className={`icon-box ${tx.actionClass}`}>
-                            <span className="material-symbols-outlined">{tx.actionIcon}</span>
+                  {overviewTransactions.map((tx, i) => {
+                    const arrowParts = tx.asset.split(/\s*→\s*|\s*->\s*/);
+
+                    const renderPart = (part: string, keyBase: string) => {
+                      const text = part.trim();
+                      // find token by exact symbol match first, then name inclusion
+                      // build a combined token list (TOKENS, SWAP_TOKENS, PORTFOLIO_ASSETS)
+                      const combined = [
+                        ...Object.values(TOKENS),
+                        ...Object.values(SWAP_TOKENS),
+                        ...PORTFOLIO_ASSETS.map(a => ({ symbol: a.ticker, name: a.name, icon: a.icon })),
+                      ];
+
+                      const token = combined.find(t => t.symbol && t.symbol.toLowerCase() === text.toLowerCase())
+                        || combined.find(t => t.symbol && text.toLowerCase().includes(t.symbol.toLowerCase()) || (t.name && t.name.toLowerCase().includes(text.toLowerCase())));
+
+                      if (token) {
+                        return (
+                          <span key={keyBase} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                            <img src={token.icon} alt={token.symbol} style={{ width: 24, height: 24, borderRadius: 9999, objectFit: 'cover' }} />
+                            <span>{token.symbol}</span>
+                          </span>
+                        );
+                      }
+
+                      return <span key={keyBase}>{text}</span>;
+                    };
+
+                    return (
+                      <tr key={i}>
+                        <td>
+                          <div className="action-info">
+                            <div className={`icon-box ${tx.actionClass}`}>
+                              <span className="material-symbols-outlined">{tx.actionIcon}</span>
+                            </div>
+                            <span>{tx.action}</span>
                           </div>
-                          <span>{tx.action}</span>
-                        </div>
-                      </td>
-                      <td className="asset">{tx.asset}</td>
-                      <td className="amount">{tx.amount}</td>
-                      <td>
-                        <span className={`status-badge ${tx.statusClass}`}>{tx.status}</span>
-                      </td>
-                      <td className="time">{tx.time}</td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="asset">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            {arrowParts.length > 1 ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                {arrowParts.map((p, idx) => (
+                                  <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                                    {renderPart(p, `p-${i}-${idx}`)}
+                                    {idx < arrowParts.length - 1 && <span style={{ opacity: 0.8 }}>→</span>}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              // single-part asset: try to show its icon if available
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                {renderPart(arrowParts[0], `p-${i}-0`)}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="amount">{tx.amount}</td>
+                        <td>
+                          <span className={`status-badge ${tx.statusClass}`}>{tx.status}</span>
+                        </td>
+                        <td className="time">{tx.time}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             ) : (

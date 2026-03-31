@@ -12,7 +12,7 @@ export default function Portfolio() {
 
   const balanceNum = useMemo(() => parseFloat(balanceUsd.replace(/[$,]/g, '')) || 100000, [balanceUsd]);
   const chartData = useMemo(() => generateChartData(balanceNum, activeTimeFilter, 0xdeadbeef), [balanceNum, activeTimeFilter]);
-
+  const showChart = false; // Chart can be toggled on when ready, but hiding for now since it's static data and not the focus of this view
   // Sorting portfolio assets
   const sortedAssets = useMemo(() => {
     const items = [...portfolioAssets];
@@ -75,14 +75,14 @@ export default function Portfolio() {
               )}
             </div>
           </div>
-          <div className="time-filters">
+          {showChart && <div className="time-filters">
             {['1D', '1W', '1M', '1Y', 'ALL'].map(t => (
               <button key={t} className={activeTimeFilter === t ? 'active' : ''} onClick={() => setActiveTimeFilter(t)}>{t}</button>
             ))}
-          </div>
+          </div>}
         </div>
 
-        <div className="chart-card">
+        {showChart && <div className="chart-card">
           <div className="chart-bg"></div>
           {/* SVG Area Chart - driven by activeTimeFilter */}
           <svg className="chart-svg" viewBox="0 0 1000 300">
@@ -113,7 +113,7 @@ export default function Portfolio() {
                 <span key={i}>{lbl}</span>
               ))}
           </div>
-        </div>
+        </div>}
       </section>
 
       {/* Detailed Asset List Section */}
@@ -203,20 +203,52 @@ export default function Portfolio() {
             </div>
             <div className="allocation-legend">
               {networkAllocation.length > 0 ? (
-                networkAllocation.map((net) => (
-                  <div className="legend-item" key={net.label}>
-                    <div className="info">
-                      {/* show mini icon if available */}
-                      {net.id ? (
-                        <img src={portfolioAssets.find(a => a.id === net.id)?.icon || ''} alt={net.label} style={{ width: 16, height: 16, borderRadius: 9999 }} />
-                      ) : (
-                        <div className={`dot ${net.dotClass}`}></div>
-                      )}
-                      <span style={{ marginLeft: 8 }}>{net.label}</span>
+                networkAllocation.map((net) => {
+                  const assetIcon = portfolioAssets.find((a) => a.id === net.id)?.icon;
+
+
+                  const ICON_SIZE = 24;
+
+                  const dotStyle: React.CSSProperties = {
+                    background: 'black',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 6px 14px rgba(0,0,0,0.45)',
+                    width: `${ICON_SIZE}px`,
+                    height: `${ICON_SIZE}px`,
+                    minWidth: `${ICON_SIZE}px`,
+                    minHeight: `${ICON_SIZE}px`,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '9999px',
+                  };
+
+                  return (
+                    <div className="legend-item" key={net.label}>
+                      <div className="info">
+                        {/* show mini icon if available and valid, otherwise render colored dot */}
+                        {assetIcon ? (
+                          <img
+                            src={assetIcon}
+                            alt={net.label}
+                            style={{
+                              width: ICON_SIZE,
+                              height: ICON_SIZE,
+                              borderRadius: 9999,
+                              boxShadow: '0 6px 14px rgba(0,0,0,0.45)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              objectFit: 'cover',
+                            }}
+                          />
+                        ) : (
+                          <div className={`dot ${net.dotClass}`} style={dotStyle}></div>
+                        )}
+                        <span style={{ marginLeft: 8 }}>{net.label}</span>
+                      </div>
+                      <span className="amount">{net.amount}</span>
                     </div>
-                    <span className="amount">{net.amount}</span>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="flex items-center justify-center py-4 opacity-50">
                   <p className="text-sm">No network data available</p>
