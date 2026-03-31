@@ -1,5 +1,5 @@
 export const checkMetaMaskInstalled = (): boolean => {
-  return typeof window !== 'undefined' && !!(window as any).ethereum;
+  return typeof window !== 'undefined' && !!((window as unknown as { ethereum?: unknown }).ethereum);
 };
 
 export const MOCK_WALLET = {

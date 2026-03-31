@@ -1,8 +1,10 @@
-﻿import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+﻿import { useState, useEffect } from 'react';
+import dayjs from 'dayjs';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useWalletStore } from '../../../store/useWalletStore';
 import { useDemoBalances } from '../../../hooks/useDemoBalances';
 import { useDemoTransactions } from '../../../hooks/useDemoTransactions';
+import { TOKENS } from '../../../data/mockData';
 import '../../Swap/Swap.scss';
 
 export default function Swap() {
@@ -11,23 +13,96 @@ export default function Swap() {
 
   const { balances, updateBalance } = useDemoBalances();
   const { addTransaction } = useDemoTransactions();
+  const ALLOWED_SWAP_SYMBOLS = ['ETH', 'BTC', 'SOL', 'ARB', 'LINK', 'DOGE', 'USDC'];
+  const location = useLocation();
+  type LocationState = { receive?: string };
+  const navReceive = (location.state as LocationState)?.receive as string | undefined;
 
   // All hooks must be declared before any early return
-  const [paySymbol, setPaySymbol] = useState<'ETH' | 'USDC'>('ETH');
+  const [paySymbol, setPaySymbol] = useState<string>('ETH');
+  const [receiveSymbol, setReceiveSymbol] = useState<string>('USDC');
   const [payAmount, setPayAmount] = useState('');
+  const [receiveAmount, setReceiveAmount] = useState('');
+  const [editingField, setEditingField] = useState<'pay' | 'receive' | null>('pay');
   const [isSwapping, setIsSwapping] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const payTokenData = balances.ETH;
-  const receiveTokenData = balances.USDC;
-  const payToken = paySymbol === 'ETH' ? payTokenData : receiveTokenData;
-  const receiveToken = paySymbol === 'ETH' ? receiveTokenData : payTokenData;
+  const [tokenPickerTarget, setTokenPickerTarget] = useState<'pay' | 'receive' | null>(null);
+  const [tokenSearch, setTokenSearch] = useState('');
+  // Initialize symbols from navigation state (Markets -> Trade)
+  useEffect(() => {
+    // Resolve a requested receive token passed via navigation state (Markets -> Trade)
+    const s = navReceive;
+    if (!s) return;
 
-  const receiveAmount = useMemo(() => {
-    if (!payAmount || isNaN(Number(payAmount)) || Number(payAmount) <= 0) return '';
-    const rate = payToken.price / receiveToken.price;
-    return (Number(payAmount) * rate).toFixed(4);
-  }, [payAmount, payToken, receiveToken]);
+    const normalize = (v: string) => v.toUpperCase();
+
+    // Prefer direct match in balances (handles demo-created tokens)
+    const direct = balances[s] || balances[normalize(s)];
+    if (direct) {
+      if (receiveSymbol !== direct.symbol) {
+        // schedule state updates to avoid synchronous setState within effect
+        setTimeout(() => {
+          setReceiveSymbol(direct.symbol);
+          setPaySymbol('USDC');
+        }, 0);
+      }
+      return;
+    }
+
+    // Fall back to TOKENS metadata (match by symbol/id/name, case-insensitive)
+    const resolved = Object.values(TOKENS).find(t =>
+      t.symbol === s ||
+      t.symbol === normalize(s) ||
+      t.id === s ||
+      t.id === s.toLowerCase() ||
+      t.name === s
+    );
+    if (resolved && receiveSymbol !== resolved.symbol) {
+      setTimeout(() => {
+        setReceiveSymbol(resolved.symbol);
+        setPaySymbol('USDC');
+      }, 0);
+    }
+    // include location.key so navigation to the same path with different state updates the UI
+  }, [location.key, navReceive, balances, receiveSymbol]);
+
+  const buildFallbackToken = (sym: string) => {
+    const meta = Object.values(TOKENS).find(t => t.symbol === sym || t.id === sym.toLowerCase());
+    if (meta) {
+      return {
+        symbol: meta.symbol,
+        name: meta.name,
+        price: meta.price,
+        balance: 0,
+        icon: meta.icon,
+      };
+    }
+    // last resort: pick first balance
+    return Object.values(balances)[0] || { symbol: 'USDC', name: 'USD Coin', price: 1, balance: 0, icon: '' };
+  };
+
+  const payToken = balances[paySymbol] || buildFallbackToken(paySymbol);
+  const receiveToken = balances[receiveSymbol] || buildFallbackToken(receiveSymbol);
+
+  // Calculate amounts bidirectionally depending on which field is being edited
+  useEffect(() => {
+    const p = Number(payAmount);
+    const rate = (payToken.price || 0) / (receiveToken.price || 1);
+    if (editingField === 'pay') {
+      if (!payAmount || isNaN(p) || p <= 0) setTimeout(() => setReceiveAmount(''), 0);
+      else setTimeout(() => setReceiveAmount((p * rate).toFixed(6)), 0);
+    }
+  }, [payAmount, payToken?.price, receiveToken?.price, editingField]);
+
+  useEffect(() => {
+    const r = Number(receiveAmount);
+    const rate = (payToken.price || 0) / (receiveToken.price || 1);
+    if (editingField === 'receive') {
+      if (!receiveAmount || isNaN(r) || r <= 0) setTimeout(() => setPayAmount(''), 0);
+      else setTimeout(() => setPayAmount((r / rate).toFixed(6)), 0);
+    }
+  }, [receiveAmount, payToken?.price, receiveToken?.price, editingField]);
 
   // Disconnected guard
   if (mode === 'disconnected') {
@@ -78,12 +153,20 @@ export default function Swap() {
   }
 
   const handleSwapTokens = () => {
-    setPaySymbol((s) => (s === 'ETH' ? 'USDC' : 'ETH'));
-    setPayAmount('');
+    setPaySymbol((p) => {
+      const newPay = receiveSymbol;
+      setReceiveSymbol(p);
+      setPayAmount('');
+      setReceiveAmount('');
+      setEditingField('pay');
+      return newPay;
+    });
+
   };
 
   const handleMax = () => {
     setPayAmount(payToken.balance.toFixed(6));
+    setEditingField('pay');
   };
 
   const handleConfirmSwap = () => {
@@ -95,15 +178,15 @@ export default function Swap() {
     setTimeout(() => {
       const recv = Number(receiveAmount);
       updateBalance(payToken.symbol, -pay);
-      updateBalance(receiveToken.symbol, recv);
+      updateBalance(receiveSymbol, recv);
 
-      const now = new Date();
+      const now = dayjs();
       addTransaction({
-        date: now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        time: now.toLocaleTimeString('en-US'),
+        date: now.format('MMM D, YYYY'),
+        time: now.format('h:mm:ss A'),
         action: 'swap',
-        asset: payToken.symbol + ' -> ' + receiveToken.symbol,
-        amount: recv.toFixed(4) + ' ' + receiveToken.symbol,
+        asset: payToken.symbol + ' -> ' + receiveSymbol,
+        amount: recv.toFixed(4) + ' ' + receiveSymbol,
         amountSign: '',
         fiat: '~$' + (recv * receiveToken.price).toFixed(2),
         status: 'completed',
@@ -121,7 +204,14 @@ export default function Swap() {
   const payUsdValue = payAmount ? (Number(payAmount) * payToken.price).toFixed(2) : '0.00';
   const receiveUsdValue = receiveAmount ? (Number(receiveAmount) * receiveToken.price).toFixed(2) : '0.00';
 
-  const isInsufficientBalance = Number(payAmount) > payToken.balance;
+  // Simple network cost estimator (USD)
+  const networkCost = (() => {
+    // base costs (demo): ETH transactions cost more than layer2/stable swaps
+    const base = payToken?.symbol === 'ETH' ? 1.45 : 0.25;
+    return (Number(base)).toFixed(2);
+  })();
+
+  const isInsufficientBalance = Number(payAmount) > (payToken?.balance ?? 0);
   const isButtonDisabled = isSwapping || !payAmount || Number(payAmount) <= 0 || isInsufficientBalance;
 
   let buttonText = 'Swap';
@@ -136,7 +226,15 @@ export default function Swap() {
             <div className="card-header">
               <h1>Swap Tokens</h1>
               <div className="actions">
-                <button className="icon-btn" onClick={() => { setPayAmount(''); }}>
+                <button className="icon-btn" onClick={() => {
+                  // reset amounts and tokens to sensible defaults
+                  setPayAmount('');
+                  setReceiveAmount('');
+                  setPaySymbol('ETH');
+                  setReceiveSymbol('USDC');
+                  setEditingField('pay');
+                  setTokenPickerTarget(null);
+                }}>
                   <span className="material-symbols-outlined">refresh</span>
                 </button>
               </div>
@@ -145,7 +243,7 @@ export default function Swap() {
             <div className="input-section">
               <div className="input-header">
                 <span className="label">You Pay</span>
-                <span className="balance">Balance: {payToken.balance.toFixed(2)} {payToken.symbol}</span>
+                <span className="balance">Balance: {(payToken?.balance ?? 0).toFixed(2)} {payToken.symbol}</span>
               </div>
               <div className="input-container">
                 <div className="input-row">
@@ -153,9 +251,19 @@ export default function Swap() {
                     placeholder="0.0"
                     type="number"
                     value={payAmount}
-                    onChange={(e) => setPayAmount(e.target.value)}
+                    onFocus={() => setEditingField('pay')}
+                    onChange={(e) => { setEditingField('pay'); setPayAmount(e.target.value); }}
                   />
-                  <button className="token-selector">
+                  <button
+                    className="token-selector"
+                    onClick={() => {
+                      // open modal-style token palette
+                      setTokenPickerTarget('pay');
+                      setTokenSearch('');
+                    }}
+                    aria-haspopup="listbox"
+                    aria-expanded={tokenPickerTarget === 'pay'}
+                  >
                     <div className="token-icon">
                       <img alt={payToken.symbol} src={payToken.icon} />
                     </div>
@@ -179,12 +287,26 @@ export default function Swap() {
             <div className="input-section mb-large">
               <div className="input-header">
                 <span className="label">You Receive</span>
-                <span className="balance">Balance: {receiveToken.balance.toFixed(2)} {receiveToken.symbol}</span>
+                <span className="balance">Balance: {(receiveToken?.balance ?? 0).toFixed(2)} {receiveToken.symbol}</span>
               </div>
               <div className="input-container">
                 <div className="input-row">
-                  <input placeholder="0.0" readOnly type="number" value={receiveAmount} />
-                  <button className="token-selector">
+                  <input
+                    placeholder="0.0"
+                    type="number"
+                    value={receiveAmount}
+                    onFocus={() => setEditingField('receive')}
+                    onChange={(e) => { setEditingField('receive'); setReceiveAmount(e.target.value); }}
+                  />
+                  <button
+                    className="token-selector"
+                    onClick={() => {
+                      setTokenPickerTarget('receive');
+                      setTokenSearch('');
+                    }}
+                    aria-haspopup="listbox"
+                    aria-expanded={tokenPickerTarget === 'receive'}
+                  >
                     <div className="token-icon">
                       <img alt={receiveToken.symbol} src={receiveToken.icon} />
                     </div>
@@ -219,7 +341,7 @@ export default function Swap() {
                   <span className="material-symbols-outlined icon">local_gas_station</span>
                   <span className="label">Network Cost</span>
                 </div>
-                <span className="value highlight-bold">{isSwapping ? 'Calculating...' : '$1.45'}</span>
+                <span className="value highlight-bold">{isSwapping ? 'Calculating...' : '$' + networkCost}</span>
               </div>
             </div>
 
@@ -238,6 +360,72 @@ export default function Swap() {
         </section>
       </main>
 
+      {/* Token Picker Palette Modal */}
+      {tokenPickerTarget && (
+        <div className="token-picker-overlay">
+          <div className="picker-backdrop" onClick={() => setTokenPickerTarget(null)} />
+          <div className="picker-content">
+            <div className="picker-header">
+              <h3>Select a token</h3>
+              <button className="close-btn" onClick={() => setTokenPickerTarget(null)}>
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <div className="picker-search">
+              <span className="material-symbols-outlined">search</span>
+              <input value={tokenSearch} onChange={(e) => setTokenSearch(e.target.value)} placeholder="Search name or symbol" />
+            </div>
+
+            <div className="picker-top">
+              {['ETH', 'USDC', 'BTC', 'SOL', 'ARB', 'LINK', 'DOGE'].map((s) => {
+                const t = balances[s] || Object.values(TOKENS).find(x => x.symbol === s);
+                return t ? (
+                  <button key={s} className="pill" onClick={() => {
+                    if (tokenPickerTarget === 'pay') setPaySymbol(s);
+                    else setReceiveSymbol(s);
+                    setTokenPickerTarget(null);
+                  }}>{t.symbol}</button>
+                ) : null;
+              })}
+            </div>
+
+            <div className="picker-list">
+              {Array.from(new Set([
+                ...Object.keys(balances),
+                ...Object.values(TOKENS).map(t => t.symbol)
+              ]))
+                .filter(s => ALLOWED_SWAP_SYMBOLS.includes(s))
+                .map(sym => {
+                  const tokenFromBalances = balances[sym];
+                  const meta = tokenFromBalances || Object.values(TOKENS).find(x => x.symbol === sym);
+                  if (!meta) return null;
+                  const q = tokenSearch.trim().toLowerCase();
+                  if (q && !(meta.name.toLowerCase().includes(q) || meta.symbol.toLowerCase().includes(q))) return null;
+                  const displayBal = (typeof tokenFromBalances?.balance === 'number')
+                    ? (tokenFromBalances.balance >= 1 ? tokenFromBalances.balance.toFixed(4) : tokenFromBalances.balance.toFixed(6))
+                    : (meta && typeof meta.balance === 'number' ? (meta.balance >= 1 ? meta.balance.toFixed(4) : meta.balance.toFixed(6)) : '--');
+                  return (
+                    <button key={sym} className="picker-row" onClick={() => {
+                      if (tokenPickerTarget === 'pay') setPaySymbol(sym);
+                      else setReceiveSymbol(sym);
+                      setTokenPickerTarget(null);
+                    }}>
+                      <div className="row-left">
+                        <img src={meta.icon} alt={meta.symbol} />
+                        <div className="meta">
+                          <div className="name">{meta.name}</div>
+                          <div className="symbol">{meta.symbol}</div>
+                        </div>
+                      </div>
+                      <div className="row-right">{displayBal}</div>
+                    </button>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
+      )}
       {/* Success Modal */}
       {showSuccessModal && (
         <div className="swap-modal-overlay">

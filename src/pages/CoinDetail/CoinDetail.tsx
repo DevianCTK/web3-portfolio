@@ -1,36 +1,43 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { COIN_DETAILS } from '../../data/mockData';
+import { COIN_DETAILS, TOKENS } from '../../data/mockData';
 import { useWalletStore } from '../../store/useWalletStore';
-import { useToast } from '../../components/ui/Toast';
 import { usePrices } from '../../hooks/usePrices';
 import { useDemoBalances } from '../../hooks/useDemoBalances';
+import type { DemoTokenBalance } from '../../hooks/useDemoBalances';
 import { useDemoTransactions } from '../../hooks/useDemoTransactions';
 import { formatUsd, formatMarketCap } from '../../services/api/priceService';
 import { generateChartData } from '../../services/chartData';
+import PriceChart from '../../components/PriceChart/PriceChart';
+import type { DataPoint, RangeKey } from '../../components/PriceChart/PriceChart';
+import dayjs from 'dayjs';
 import type { CoinDetail as CoinDetailType } from '../../data/mockData';
 import './CoinDetail.scss';
 
 export default function CoinDetail() {
   const { coinId } = useParams();
   const navigate = useNavigate();
-  const { showToast } = useToast();
+  // no toast in coin detail swaps
   const mode = useWalletStore((state) => state.mode);
   const walletBalance = useWalletStore((state) => state.balance);
   const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
-  const { data: prices } = usePrices();
-  const { updateBalance } = useDemoBalances();
+  const { data: prices, dataUpdatedAt } = usePrices();
+  const { updateBalance, balances } = useDemoBalances();
   const { addTransaction } = useDemoTransactions();
   const [timeframe, setTimeframe] = useState('1D');
   const [payAmount, setPayAmount] = useState('');
   const [receiveAmount, setReceiveAmount] = useState('');
   const [coin, setCoin] = useState<CoinDetailType | null>(null);
+  const [payIsUsdc, setPayIsUsdc] = useState(true);
+  const [editingField, setEditingField] = useState<'pay' | 'receive' | null>('pay');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     if (coinId && COIN_DETAILS[coinId]) {
-      setCoin(COIN_DETAILS[coinId]);
+      // schedule to avoid synchronous setState in effect
+      setTimeout(() => setCoin(COIN_DETAILS[coinId]), 0);
     } else {
-      setCoin(null);
+      setTimeout(() => setCoin(null), 0);
     }
   }, [coinId]);
 
@@ -54,35 +61,72 @@ export default function CoinDetail() {
   const chartLow = formatUsd(chartData.low);
   const chartHigh = formatUsd(chartData.high);
 
-  // Mode-aware balance
+  // Map generated chart points to PriceChart DataPoint (with timestamps)
+  const series: DataPoint[] = useMemo(() => {
+    const pts = chartData.points || [];
+    // estimate duration for timeframe
+    const now = dayjs().valueOf();
+    let duration = 24 * 60 * 60 * 1000; // default 1D
+    if (timeframe === '1W') duration = 7 * 24 * 60 * 60 * 1000;
+    if (timeframe === '1M') duration = 30 * 24 * 60 * 60 * 1000;
+    if (timeframe === '1Y' || timeframe === 'ALL') duration = 365 * 24 * 60 * 60 * 1000;
+
+    return pts.map(p => ({
+      time: Math.max(0, now - Math.round((1 - p.x) * duration)),
+      price: p.y,
+    }));
+  }, [chartData.points, timeframe]);
+
+  // Mode-aware balance: prefer live demo balances for the coin when in demo mode
   const balanceInfo = useMemo(() => {
     if (mode === 'demo') {
-      return { main: coin?.balance ?? '--', fiat: coin?.balanceFiat ?? '' };
+      const sym = coin?.symbol;
+      const live = sym ? balances[sym] : undefined;
+      if (live) {
+        return { main: live.balance.toFixed(6) + ' ' + sym, fiat: '' };
+      }
+
+      const raw = coin?.balance;
+      const parsed = Number(String(raw).replace(/[^0-9.-]+/g, ''));
+      if (!isNaN(parsed)) return { main: parsed.toFixed(6) + ' ' + (coin?.symbol ?? ''), fiat: coin?.balanceFiat ?? '' };
+      return { main: raw ?? '--', fiat: coin?.balanceFiat ?? '' };
     }
     if (mode === 'wallet') {
-      // Only show real balance for ETH since that's all MetaMask provides
       if (coinId === 'ethereum') {
         const ethBal = parseFloat(walletBalance || '0');
-        return {
-          main: ethBal.toFixed(4) + ' ETH',
-          fiat: formatUsd(ethBal * priceNum),
-        };
+        return { main: ethBal.toFixed(4) + ' ETH', fiat: formatUsd(ethBal * priceNum) };
       }
       return { main: 'No balance data', fiat: '' };
     }
     return { main: 'Connect wallet to view', fiat: '' };
-  }, [mode, coin, coinId, walletBalance, priceNum]);
+  }, [mode, coin, coinId, walletBalance, priceNum, balances]);
 
+  // Bidirectional inputs: when editing payAmount compute receive, and vice versa
   useEffect(() => {
+    if (editingField !== 'pay') return;
     if (!payAmount || isNaN(Number(payAmount))) {
-      setReceiveAmount('');
+      setTimeout(() => setReceiveAmount(''), 0);
       return;
     }
     if (priceNum > 0) {
-      const calculated = (Number(payAmount) / priceNum).toFixed(6);
-      setReceiveAmount(calculated);
+      const p = Number(payAmount);
+      if (payIsUsdc) setTimeout(() => setReceiveAmount((p / priceNum).toFixed(6)), 0);
+      else setTimeout(() => setReceiveAmount((p * priceNum).toFixed(2)), 0);
     }
-  }, [payAmount, priceNum]);
+  }, [payAmount, priceNum, payIsUsdc, editingField]);
+
+  useEffect(() => {
+    if (editingField !== 'receive') return;
+    if (!receiveAmount || isNaN(Number(receiveAmount))) {
+      setTimeout(() => setPayAmount(''), 0);
+      return;
+    }
+    if (priceNum > 0) {
+      const r = Number(receiveAmount);
+      if (payIsUsdc) setTimeout(() => setPayAmount((r * priceNum).toFixed(2)), 0);
+      else setTimeout(() => setPayAmount((r / priceNum).toFixed(6)), 0);
+    }
+  }, [receiveAmount, priceNum, payIsUsdc, editingField]);
 
   if (!coin) {
     return (
@@ -100,31 +144,67 @@ export default function CoinDetail() {
     }
     if (mode === 'wallet') return; // disabled in wallet mode
     if (!payAmount || Number(payAmount) <= 0) return;
-
     const pay = Number(payAmount);
     const recv = Number(receiveAmount);
 
-    // Update USDC balance (deduct pay)
-    updateBalance('USDC', -pay);
+    // Update demo balances depending on direction
+    if (payIsUsdc) {
+      // paying USDC -> receive coin
+      updateBalance('USDC', -pay);
+      if (coin?.symbol) {
+        updateBalance(coin.symbol, recv);
+      }
+    } else {
+      // paying coin -> receive USDC
+      if (coin?.symbol) {
+        updateBalance(coin.symbol, -pay);
+      }
+      updateBalance('USDC', recv);
+    }
 
-    // Record the transaction
-    const now = new Date();
+    // Record the transaction with a meaningful asset label depending on direction
+    const now = dayjs();
     addTransaction({
-      date: now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      time: now.toLocaleTimeString('en-US'),
+      date: now.format('MMM D, YYYY'),
+      time: now.format('h:mm:ss A'),
       action: 'swap',
-      asset: 'USDC → ' + coin.symbol,
-      amount: recv.toFixed(6) + ' ' + coin.symbol,
+      asset: payIsUsdc ? `USDC → ${coin?.symbol}` : `${coin?.symbol} → USDC`,
+      amount: payIsUsdc ? `${recv.toFixed(6)} ${coin?.symbol}` : `${pay.toFixed(6)} ${coin?.symbol}`,
       amountSign: '',
-      fiat: '≈ $' + pay.toFixed(2),
+      fiat: `≈ $${(payIsUsdc ? pay : recv).toFixed(2)}`,
       status: 'completed',
       icon: 'sync_alt',
       iconColor: 'swap',
     });
 
-    showToast(`Swapped ${payAmount} USDC for ${receiveAmount} ${coin.symbol}`, 'success');
+    // Do not show top-right toast in CoinDetail (use modal on success)
+
     setPayAmount('');
     setReceiveAmount('');
+    setShowSuccessModal(true);
+  };
+
+  const buildFallbackToken = (sym: string): DemoTokenBalance => {
+    const meta = Object.values(TOKENS).find(t => t.symbol === sym || t.id === sym.toLowerCase());
+    if (meta) return { symbol: meta.symbol, name: meta.name, price: meta.price, balance: 0, icon: meta.icon } as DemoTokenBalance;
+    return { symbol: sym, name: sym, price: 0, balance: 0, icon: '' } as DemoTokenBalance;
+  };
+
+  const payToken = payIsUsdc ? (balances['USDC'] || buildFallbackToken('USDC')) : (balances[coin.symbol] || buildFallbackToken(coin.symbol));
+  const receiveToken = payIsUsdc ? (balances[coin.symbol] || buildFallbackToken(coin.symbol)) : (balances['USDC'] || buildFallbackToken('USDC'));
+
+  const handleSwapTokens = () => {
+    const oldPay = payAmount;
+    const oldRecv = receiveAmount;
+    setPayIsUsdc((s) => !s);
+    setPayAmount(oldRecv);
+    setReceiveAmount(oldPay);
+    setEditingField('pay');
+  };
+
+  const handleMax = () => {
+    setPayAmount((payToken?.balance ?? 0).toFixed(6));
+    setEditingField('pay');
   };
 
   const swapButtonDisabled = mode === 'wallet' || !payAmount || Number(payAmount) <= 0;
@@ -161,7 +241,7 @@ export default function CoinDetail() {
         <div className="price-info">
           <div className="price-row">
             <span className="price">{priceLabel}</span>
-            <span className={`change ${changePositive ? '' : 'negative'}`}>
+            <span className={`change ${changePositive ? 'positive' : 'negative'}`}>
               <span className="material-symbols-outlined">
                 {changePositive ? 'arrow_drop_up' : 'arrow_drop_down'}
               </span>
@@ -190,28 +270,27 @@ export default function CoinDetail() {
                   </button>
                 ))}
               </div>
+              <div className="last-updated">
+                {dataUpdatedAt ? `Prices updated: ${dayjs(dataUpdatedAt).format('h:mm:ss A M/D/YYYY')}` : ''}
+              </div>
             </div>
 
-            {/* Chart Visual */}
+            {/* Chart Visual replaced by Recharts component */}
             <div className="chart-visual">
-              <svg preserveAspectRatio="none" viewBox="0 0 1000 300">
-                <defs>
-                  <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="#cdbdff" stopOpacity="0.3"></stop>
-                    <stop offset="100%" stopColor="#cdbdff" stopOpacity="0"></stop>
-                  </linearGradient>
-                </defs>
-                <path d={chartData.areaPath} fill="url(#chartGradient)"></path>
-                <path d={chartData.path} fill="none" stroke="#cdbdff" strokeLinecap="round" strokeWidth="3"></path>
-              </svg>
-
-              <div className="chart-tooltip">
-                <div className="guide-line"></div>
-                <div className="tooltip-card">
-                  <div className="time">Now</div>
-                  <div className="value">{priceLabel}</div>
-                </div>
-              </div>
+              <PriceChart
+                data={series}
+                range={((): RangeKey => {
+                  if (timeframe === '1W') return '7D';
+                  if (timeframe === 'ALL') return '1Y';
+                  return timeframe as RangeKey;
+                })()}
+                onRangeChange={(r) => {
+                  // map PriceChart ranges back to our timeframe values
+                  if (r === '7D') setTimeframe('1W');
+                  else if (r === '1Y') setTimeframe('1Y');
+                  else setTimeframe(r);
+                }}
+              />
             </div>
 
             <div className="chart-footer">
@@ -246,13 +325,14 @@ export default function CoinDetail() {
         {/* Right Column */}
         <aside className="sidebar-col">
           {/* Trading Action Card */}
-          <div className="trade-card">
+          <div className="trade-card swap-card">
             <div className="glow"></div>
             <h4 className="title">Trade {coin.symbol}</h4>
 
             <div className="input-section">
               <div className="input-header">
                 <span className="label">You Pay</span>
+                <span className="balance">Balance: {(payToken?.balance ?? 0).toFixed(4)} {payToken.symbol}</span>
               </div>
               <div className="input-container">
                 <div className="input-row">
@@ -260,27 +340,33 @@ export default function CoinDetail() {
                     placeholder="0.0"
                     type="number"
                     value={payAmount}
-                    onChange={(e) => setPayAmount(e.target.value)}
+                    onFocus={() => setEditingField('pay')}
+                    onChange={(e) => { setEditingField('pay'); setPayAmount(e.target.value); }}
                   />
                   <div className="token-display">
-                    <span className="token-symbol">USDC</span>
+                    <div className="token-icon-small">
+                      <img alt={payToken.symbol} src={payToken.icon} />
+                    </div>
+                    <span className="token-symbol">{payToken.symbol}</span>
                   </div>
                 </div>
                 <div className="input-footer">
-                  <span className="usd-value">≈ ${payAmount || '0.00'}</span>
+                  <span className="usd-value">~ ${payIsUsdc ? (payAmount || '0.00') : (payAmount ? (Number(payAmount) * priceNum).toFixed(2) : '0.00')}</span>
+                  <button className="max-btn" onClick={handleMax}>Max</button>
                 </div>
               </div>
             </div>
 
             <div className="swap-divider">
-              <div className="swap-btn">
+              <button className="swap-btn" onClick={handleSwapTokens} aria-label="Swap direction">
                 <span className="material-symbols-outlined">swap_vert</span>
-              </div>
+              </button>
             </div>
 
             <div className="input-section mb-large">
               <div className="input-header">
                 <span className="label">You Receive</span>
+                <span className="balance">Balance: {(receiveToken?.balance ?? 0).toFixed(4)} {receiveToken.symbol}</span>
               </div>
               <div className="input-container">
                 <div className="input-row">
@@ -288,14 +374,18 @@ export default function CoinDetail() {
                     placeholder="0.0"
                     type="number"
                     value={receiveAmount}
-                    readOnly
+                    onFocus={() => setEditingField('receive')}
+                    onChange={(e) => { setEditingField('receive'); setReceiveAmount(e.target.value); }}
                   />
                   <div className="token-display">
-                    <span className="token-symbol">{coin.symbol}</span>
+                    <div className="token-icon-small">
+                      <img alt={receiveToken.symbol} src={receiveToken.icon} />
+                    </div>
+                    <span className="token-symbol">{receiveToken.symbol}</span>
                   </div>
                 </div>
                 <div className="input-footer">
-                  <span className="usd-value">≈ ${receiveAmount ? (Number(receiveAmount) * priceNum).toFixed(2) : '0.00'}</span>
+                  <span className="usd-value">~ ${payIsUsdc ? (receiveAmount ? (Number(receiveAmount) * priceNum).toFixed(2) : '0.00') : (receiveAmount || '0.00')}</span>
                 </div>
               </div>
             </div>
@@ -362,10 +452,43 @@ export default function CoinDetail() {
         </aside>
       </div>
 
+      {/* Token picker removed from CoinDetail - swaps are coin <-> USDC only here */}
+
       <div className="bg-blobs">
         <div className="blob-1"></div>
         <div className="blob-2"></div>
       </div>
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="swap-modal-overlay">
+          <div className="modal-backdrop" onClick={() => setShowSuccessModal(false)}></div>
+          <div className="modal-content">
+            <div className="success-icon">
+              <span className="material-symbols-outlined">check_circle</span>
+            </div>
+            <h2>Transaction Successful</h2>
+            <p>Your swap has been processed and confirmed on the blockchain.</p>
+
+            <div className="modal-actions">
+              <button
+                className="btn-primary"
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  navigate('/dashboard');
+                }}
+              >
+                Return to Dashboard
+              </button>
+              <button
+                className="btn-secondary"
+                onClick={() => setShowSuccessModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

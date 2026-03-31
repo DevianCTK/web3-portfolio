@@ -52,22 +52,12 @@ export function useWallet() {
 
   const handleConnectDemo = () => {
     try {
-      // Seed demo balances only if missing — persist across logout
-      const existing = localStorage.getItem('demo-balances');
-      if (!existing) {
-        const demoBalances = {
-          ETH: { ...SWAP_TOKENS.ETH },
-          USDC: { ...SWAP_TOKENS.USDC },
-        };
-        localStorage.setItem('demo-balances', JSON.stringify(demoBalances));
-      }
-
-      // Seed demo transactions only if missing
+      // Ensure demo transactions exist, but do not overwrite demo-balances (now seeded centrally)
       if (!localStorage.getItem('demo-transactions')) {
         localStorage.setItem('demo-transactions', JSON.stringify(TRANSACTIONS));
       }
 
-      // Read current demo ETH balance to show in navbar
+      // Read ETH demo balance for navbar display (if present)
       const stored = JSON.parse(localStorage.getItem('demo-balances') || '{}');
       const ethBal = stored?.ETH?.balance ?? SWAP_TOKENS.ETH.balance;
 

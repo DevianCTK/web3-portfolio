@@ -1,0 +1,56 @@
+.price-chart-card {
+    background: rgba(29, 31, 36, 0.6);
+    border-radius: 12px;
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.6);
+}
+
+.chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+
+    .title {
+        color: var(--color-on-surface-variant);
+        font-weight: 700;
+    }
+
+    .range-buttons {
+        display: flex;
+        gap: 0.5rem;
+
+        button {
+            background: transparent;
+            border: none;
+            color: var(--color-on-surface-variant);
+            padding: 0.375rem 0.6rem;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.875rem;
+
+            &.active {
+                background: var(--color-primary);
+                color: var(--color-on-primary);
+                box-shadow: 0 6px 18px rgba(97, 68, 195, 0.12);
+            }
+        }
+    }
+}
+
+.chart-body {
+    width: 100%;
+    height: 260px;
+
+    .chart-loading {
+        height: 260px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-on-surface-variant);
+    }
+}
+
+/* Subtle grid and axis coloring handled in component via props */

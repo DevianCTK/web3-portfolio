@@ -85,7 +85,7 @@ export function ConnectWalletModal() {
 
               <div className="modal-footer">
                 <p>
-                  By connecting, you agree to the Sovereign Protocol Terms.
+                  By connecting, you agree to the Protocol Interface Terms.
                 </p>
               </div>
             </>

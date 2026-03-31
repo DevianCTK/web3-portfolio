@@ -2,7 +2,7 @@
   animation: fadeIn 0.3s ease-in-out;
   max-width: 1400px;
   margin: 0 auto;
-  
+
   .portfolio-hero {
     margin-bottom: 3rem;
 
@@ -61,11 +61,13 @@
           background: none;
           border: none;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.15s ease;
 
           &.active {
-            color: var(--color-secondary);
-            background-color: var(--color-surface-container);
+            color: var(--color-on-primary);
+            background-color: var(--color-primary);
+            box-shadow: 0 6px 18px rgba(130, 76, 255, 0.12);
+            transform: translateY(-1px);
           }
 
           &:not(.active) {
@@ -142,7 +144,7 @@
         align-items: center;
         gap: 0.5rem;
         color: var(--color-on-surface-variant);
-        
+
         span {
           font-size: 0.75rem;
           font-weight: 700;
@@ -181,10 +183,24 @@
         font-weight: 900;
         color: rgba(203, 195, 217, 0.4);
 
-        .col-asset { grid-column: span 4; }
-        .col-balance { grid-column: span 3; text-align: right; }
-        .col-value { grid-column: span 3; text-align: right; }
-        .col-change { grid-column: span 2; text-align: right; }
+        .col-asset {
+          grid-column: span 4;
+        }
+
+        .col-balance {
+          grid-column: span 3;
+          text-align: right;
+        }
+
+        .col-value {
+          grid-column: span 3;
+          text-align: right;
+        }
+
+        .col-change {
+          grid-column: span 2;
+          text-align: right;
+        }
       }
 
       .asset-row {
@@ -231,6 +247,7 @@
               font-weight: 700;
               font-size: 1.125rem;
             }
+
             .ticker {
               font-size: 0.75rem;
               color: var(--color-on-surface-variant);
@@ -269,10 +286,10 @@
             border-radius: 9999px;
 
             &.positive {
-              color: var(--color-secondary);
-              background-color: rgba(189, 244, 255, 0.1);
+              color: var(--color-success);
+              background-color: rgba(110, 231, 183, 0.06);
             }
-            
+
             &.negative {
               color: var(--color-error);
               background-color: rgba(255, 180, 171, 0.1);
@@ -299,7 +316,7 @@
 
     .network-allocation {
       grid-column: span 1;
-      
+
       @media (min-width: 1024px) {
         grid-column: span 2;
       }
@@ -378,9 +395,17 @@
                 height: 0.75rem;
                 border-radius: 9999px;
 
-                &.eth { background-color: var(--color-primary); }
-                &.sol { background-color: var(--color-secondary); }
-                &.arb { background-color: var(--color-tertiary); }
+                &.eth {
+                  background-color: var(--color-primary);
+                }
+
+                &.sol {
+                  background-color: var(--color-secondary);
+                }
+
+                &.arb {
+                  background-color: var(--color-tertiary);
+                }
               }
 
               span {

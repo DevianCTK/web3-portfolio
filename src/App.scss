@@ -5,9 +5,9 @@
 }
 
 .padded-route {
-  padding-top: 96px; // Navbar height (64px) + comfortable spacing (32px)
+  padding-top: 72px; // Navbar height (64px) + small spacing (8px)
 
   &> :not(.dashboard-layout) {
-    padding: 0 32px 32px 32px; // Only pad sides and bottom
+    padding: 0 24px 24px 24px; // Uniform side and bottom padding
   }
 }

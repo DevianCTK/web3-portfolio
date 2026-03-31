@@ -1,5 +1,5 @@
 ﻿import { useState, useCallback, useEffect } from 'react';
-import { SWAP_TOKENS } from '../data/mockData';
+import { SWAP_TOKENS, TOKENS } from '../data/mockData';
 import { useWalletStore } from '../store/useWalletStore';
 
 export interface DemoTokenBalance {
@@ -13,10 +13,27 @@ export interface DemoTokenBalance {
 const STORAGE_KEY = 'demo-balances';
 
 function getDefaults(): Record<string, DemoTokenBalance> {
-  return {
-    ETH: { ...SWAP_TOKENS.ETH },
-    USDC: { ...SWAP_TOKENS.USDC },
-  };
+  const defaults: Record<string, DemoTokenBalance> = {};
+
+  // Seed with swap shortcuts (ETH, USDC)
+  defaults[SWAP_TOKENS.ETH.symbol] = { ...SWAP_TOKENS.ETH } as DemoTokenBalance;
+  defaults[SWAP_TOKENS.USDC.symbol] = { ...SWAP_TOKENS.USDC } as DemoTokenBalance;
+
+  // Include other tokens from TOKENS (SOL, ARB, LINK, MATIC, etc.)
+  for (const token of Object.values(TOKENS)) {
+    const sym = token.symbol;
+    if (!defaults[sym]) {
+      defaults[sym] = {
+        symbol: sym,
+        name: token.name,
+        price: token.price,
+        balance: token.balance || 0,
+        icon: token.icon,
+      };
+    }
+  }
+
+  return defaults;
 }
 
 function load(): Record<string, DemoTokenBalance> {
@@ -67,7 +84,22 @@ export function useDemoBalances() {
   const updateBalance = useCallback((symbol: string, delta: number) => {
     setBalances((prev) => {
       const token = prev[symbol];
-      if (!token) return prev;
+      if (!token) {
+        // create a new token entry if we have metadata
+        const meta = Object.values(TOKENS).find(t => t.symbol === symbol || t.id === symbol.toLowerCase());
+        if (!meta) return prev;
+        const newBal = Math.max(0, delta);
+        return {
+          ...prev,
+          [symbol]: {
+            symbol,
+            name: meta.name,
+            price: meta.price,
+            balance: newBal,
+            icon: meta.icon,
+          },
+        };
+      }
       return {
         ...prev,
         [symbol]: { ...token, balance: Math.max(0, token.balance + delta) },

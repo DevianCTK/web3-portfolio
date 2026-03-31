@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import dayjs from 'dayjs';
 
 export type AppMode = 'disconnected' | 'demo' | 'wallet';
 
@@ -16,16 +17,62 @@ interface WalletState {
   disconnect: () => void;
 }
 
+const STORAGE_KEY = 'wallet-session';
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed?.expires && dayjs().valueOf() > parsed.expires) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function persistSession(obj: { address: string | null; balance: string | null; mode: AppMode }) {
+  try {
+    const expires = dayjs().valueOf() + 24 * 60 * 60 * 1000; // 1 day
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...obj, expires }));
+  } catch {
+    // ignore
+  }
+}
+
+const initial = loadSession();
+
 export const useWalletStore = create<WalletState>((set) => ({
-  address: null,
-  balance: null,
+  address: initial?.address ?? null,
+  balance: initial?.balance ?? null,
   isConnecting: false,
   isConnectModalOpen: false,
-  mode: 'disconnected',
-  setAddress: (address) => set({ address }),
-  setBalance: (balance) => set({ balance }),
+  mode: (initial?.mode as AppMode) ?? 'disconnected',
+  setAddress: (address) => {
+    set((s) => {
+      const newState = { ...s, address };
+      persistSession({ address, balance: newState.balance, mode: newState.mode });
+      return { address };
+    });
+  },
+  setBalance: (balance) => {
+    set((s) => {
+      const newState = { ...s, balance };
+      persistSession({ address: newState.address, balance, mode: newState.mode });
+      return { balance };
+    });
+  },
   setConnecting: (isConnecting) => set({ isConnecting }),
   setConnectModalOpen: (isOpen) => set({ isConnectModalOpen: isOpen }),
-  setMode: (mode) => set({ mode }),
-  disconnect: () => set({ address: null, balance: null, mode: 'disconnected' }),
+  setMode: (mode) => {
+    set((s) => {
+      const newState = { ...s, mode };
+      persistSession({ address: newState.address, balance: newState.balance, mode });
+      return { mode };
+    });
+  },
+  disconnect: () => {
+    try { localStorage.removeItem(STORAGE_KEY); } catch { }
+    set({ address: null, balance: null, mode: 'disconnected' });
+  },
 }));

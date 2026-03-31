@@ -1,12 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../../hooks/useWallet';
 import { useWalletStore } from '../../store/useWalletStore';
+import { usePrices } from '../../hooks/usePrices';
 import './LandingPage.scss';
 
 export default function LandingPage() {
   const { isConnected } = useWallet();
   const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
   const navigate = useNavigate();
+  const { data: prices } = usePrices();
 
   return (
     <>
@@ -28,7 +30,7 @@ export default function LandingPage() {
                 <span className="gradient-text">Finance is Here.</span>
               </h1>
               <p className="hero-description">
-                Experience sovereign navigation through the decentralized frontier. Swap, earn, and govern with the speed of a high-performance terminal and the security of a digital vault.
+                Experience the Protocol Interface for navigating the decentralized frontier. Swap, earn, and govern with the speed of a high-performance terminal and the security of a digital vault.
               </p>
               <div className="hero-actions">
                 {!isConnected ? (
@@ -131,7 +133,7 @@ export default function LandingPage() {
                 </div>
                 <div className="content">
                   <h3>Unrivaled Security</h3>
-                  <p>Multi-sig custody and rigorous smart contract audits by Tier-1 cybersecurity firms ensure your assets remain sovereign.</p>
+                  <p>Multi-sig custody and rigorous smart contract audits by Tier-1 cybersecurity firms ensure your assets remain secure.</p>
                 </div>
               </div>
 
@@ -152,7 +154,7 @@ export default function LandingPage() {
                       </div>
                       <span className="name">BTC/USDT</span>
                     </div>
-                    <span className="price secondary">$64,231.00</span>
+                    <span className="price secondary">{prices?.bitcoin ? '$' + prices.bitcoin.usd.toLocaleString() : '--'}</span>
                   </div>
                   <div className="ticker-item">
                     <div className="pair">
@@ -161,7 +163,7 @@ export default function LandingPage() {
                       </div>
                       <span className="name">ETH/USDT</span>
                     </div>
-                    <span className="price primary">$3,452.12</span>
+                    <span className="price primary">{prices?.ethereum ? '$' + prices.ethereum.usd.toLocaleString() : '--'}</span>
                   </div>
                 </div>
               </div>
@@ -174,7 +176,7 @@ export default function LandingPage() {
           <div className="bg-gradient"></div>
           <div className="cta-container">
             <h2 className="title">Ready to navigate the <br />New Internet?</h2>
-            <p className="description">Connect your wallet today and claim your sovereign identity in the Ethereal Edge ecosystem.</p>
+            <p className="description">Connect your wallet today and claim your Protocol Interface identity in the Ethereal Edge ecosystem.</p>
             <div className="actions">
               {!isConnected ? (
                 <button onClick={() => setConnectModalOpen(true)} className="btn-primary">

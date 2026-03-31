@@ -129,7 +129,11 @@ export default function Overview() {
                 {assetAllocation.map((item, i) => (
                   <div className="alloc-item" key={i}>
                     <div className="info">
-                      <div className={`dot ${item.dotClass}`}></div>
+                      {item.icon ? (
+                        <div className="token-icon-small"><img src={item.icon} alt={item.label} /></div>
+                      ) : (
+                        <div className={`dot ${item.dotClass}`}></div>
+                      )}
                       <span>{item.label}</span>
                     </div>
                     <span className="percent">{item.percent}</span>

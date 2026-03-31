@@ -1,10 +1,11 @@
 ﻿import { useWalletStore } from '../store/useWalletStore';
-import { PORTFOLIO_ASSETS, TOKENS } from '../data/mockData';
+import { TOKENS } from '../data/mockData';
+import { useDemoBalances } from './useDemoBalances';
 import type { Transaction } from '../data/mockData';
 import type { AppMode } from '../store/useWalletStore';
 import { usePrices } from './usePrices';
 import { useDemoTransactions } from './useDemoTransactions';
-import { PORTFOLIO_GECKO_MAP, formatUsd } from '../services/api/priceService';
+import { formatUsd } from '../services/api/priceService';
 
 // ── Interfaces ──
 
@@ -24,6 +25,7 @@ export interface AllocationItem {
   label: string;
   percent: string;
   dotClass: string;
+  icon?: string;
 }
 
 export interface NetworkItem {
@@ -86,28 +88,39 @@ export function useAppData(): AppData {
   const balance = useWalletStore((s) => s.balance);
   const { data: prices, isLoading: isLoadingPrices } = usePrices();
   const { transactions: demoTransactions } = useDemoTransactions();
+  const { balances } = useDemoBalances();
 
   const ethPrice = prices?.ethereum?.usd ?? FALLBACK_ETH_PRICE;
 
   if (mode === 'demo') {
-    // Compute live portfolio values using real prices when available
-    const demoAssets: PortfolioAsset[] = PORTFOLIO_ASSETS.map((asset) => {
-      const geckoId = PORTFOLIO_GECKO_MAP[asset.id];
-      const livePrice = geckoId ? prices?.[geckoId]?.usd : null;
-      const liveChange = geckoId ? prices?.[geckoId]?.usd_24h_change : null;
+    // Build portfolio from demo balances so swaps persist into assets
 
-      if (livePrice && asset.id !== 'usdc') {
-        const balanceNum = parseFloat(asset.balance.replace(/,/g, ''));
-        const value = balanceNum * livePrice;
-        return {
-          ...asset,
-          priceLabel: formatUsd(livePrice),
-          value: formatUsd(value),
-          change: liveChange != null ? (liveChange >= 0 ? '+' : '') + liveChange.toFixed(2) + '%' : asset.change,
-          isPositive: liveChange != null ? liveChange >= 0 : asset.isPositive,
-        };
-      }
-      return asset;
+    // map symbol -> internal id (e.g., ETH -> ethereum)
+    const symbolToId: Record<string, string> = {};
+    for (const [id, t] of Object.entries(TOKENS)) {
+      symbolToId[t.symbol] = id;
+    }
+
+    const demoAssets: PortfolioAsset[] = Object.values(balances).map((b) => {
+      const symbol = b.symbol;
+      const internalId = symbolToId[symbol];
+      const livePrice = internalId ? prices?.[internalId]?.usd : undefined;
+      const liveChange = internalId ? prices?.[internalId]?.usd_24h_change : null;
+      const balanceNum = Number(b.balance || 0);
+      const priceForCalc = livePrice ?? b.price ?? 0;
+      const value = priceForCalc ? balanceNum * priceForCalc : 0;
+
+      return {
+        id: symbol.toLowerCase(),
+        name: b.name,
+        ticker: symbol,
+        priceLabel: livePrice ? formatUsd(livePrice) : formatUsd(b.price),
+        balance: balanceNum.toFixed(6),
+        value: formatUsd(value),
+        change: liveChange != null ? (liveChange >= 0 ? '+' : '') + liveChange.toFixed(2) + '%' : '--',
+        isPositive: liveChange != null ? liveChange >= 0 : true,
+        icon: b.icon,
+      };
     });
 
     const demoTotalUsd = demoAssets.reduce(
@@ -133,7 +146,7 @@ export function useAppData(): AppData {
       const val = parseFloat(a.value.replace(/[$,]/g, ''));
       const pct = demoTotalUsd > 0 ? ((val / demoTotalUsd) * 100).toFixed(1) : '0';
       const dotMap: Record<string, string> = { btc: 'eth', eth: 'stable', sol: 'defi', usdc: 'other' };
-      return { label: a.name, percent: pct + '%', dotClass: dotMap[a.id] || 'other' };
+      return { label: a.name, percent: pct + '%', dotClass: dotMap[a.id] || 'other', icon: a.icon };
     });
 
     return {
@@ -145,11 +158,33 @@ export function useAppData(): AppData {
       transactions: demoTransactions,
       overviewTransactions: demoTransactions.slice(0, 4).map(txToOverview),
       assetAllocation: demoAllocation,
-      networkAllocation: [
-        { label: 'Bitcoin', amount: demoAssets[0]?.value || '$0', dotClass: 'eth', percent: 65 },
-        { label: 'Ethereum', amount: demoAssets[1]?.value || '$0', dotClass: 'sol', percent: 25 },
-        { label: 'Other', amount: formatUsd(demoTotalUsd - parseFloat((demoAssets[0]?.value || '0').replace(/[$,]/g, '')) - parseFloat((demoAssets[1]?.value || '0').replace(/[$,]/g, ''))), dotClass: 'arb', percent: 10 },
-      ],
+      networkAllocation: (() => {
+        const byValue = [...demoAssets].map(a => ({
+          label: a.name,
+          valueNum: parseFloat(a.value.replace(/[$,]/g, '')) || 0,
+          amount: a.value,
+          id: a.id,
+        })).sort((x, y) => y.valueNum - x.valueNum);
+
+        const top = byValue.slice(0, 2);
+        const otherValue = demoTotalUsd - top.reduce((s, t) => s + t.valueNum, 0);
+
+        const dotMap: Record<string, string> = { bitcoin: 'eth', ethereum: 'sol', solana: 'defi', usdc: 'stable' };
+
+        const items = top.map((t) => ({
+          id: t.id,
+          label: t.label,
+          amount: t.amount,
+          dotClass: dotMap[t.id] || 'other',
+          percent: demoTotalUsd > 0 ? Math.round((t.valueNum / demoTotalUsd) * 100) : 0,
+        }));
+
+        if (otherValue > 0) {
+          items.push({ id: 'other', label: 'Other', amount: formatUsd(otherValue), dotClass: 'arb', percent: Math.max(0, 100 - items.reduce((s, it) => s + it.percent, 0)) });
+        }
+
+        return items;
+      })(),
       isLoadingPrices,
     };
   }

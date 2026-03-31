@@ -23,7 +23,6 @@ export function Navbar() {
           </NavLink>
           <nav className="nav-links">
             <NavLink to="/dashboard" className={({ isActive }) => isActive ? "active" : ""}>Dashboard</NavLink>
-            <NavLink to="/dashboard/swap" className={({ isActive }) => isActive ? "active" : ""}>Swap</NavLink>
             <NavLink to="/markets" className={({ isActive }) => isActive ? "active" : ""}>Markets</NavLink>
           </nav>
         </div>

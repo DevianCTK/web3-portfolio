@@ -1,4 +1,5 @@
 ﻿import { useState, useCallback, useEffect } from 'react';
+import dayjs from 'dayjs';
 import type { Transaction } from '../data/mockData';
 import { TRANSACTIONS } from '../data/mockData';
 
@@ -9,7 +10,15 @@ function loadTransactions(): Transaction[] {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // If existing transactions contain old demo data (pre-2026), reset to canonical seed
+        const hasOld = parsed.some((tx: Transaction) => {
+          const maybe = dayjs(tx.date);
+          const year = maybe.isValid() ? maybe.year() : (tx.date.includes('202') ? parseInt(tx.date.slice(-4)) : 0);
+          return year < 2026;
+        });
+        if (!hasOld) return parsed;
+      }
     }
   } catch { /* ignore corrupt data */ }
   // Seed with static mock on first load
@@ -26,7 +35,7 @@ export function useDemoTransactions() {
   }, [transactions]);
 
   const addTransaction = useCallback((tx: Omit<Transaction, 'id'>) => {
-    const newTx: Transaction = { ...tx, id: 'tx-' + Date.now() };
+    const newTx: Transaction = { ...tx, id: 'tx-' + dayjs().valueOf() };
     setTransactions((prev) => [newTx, ...prev]);
     return newTx;
   }, []);

@@ -6,11 +6,32 @@ import './Portfolio.scss';
 
 export default function Portfolio() {
   const [activeTimeFilter, setActiveTimeFilter] = useState('1W');
+  const [sortOption, setSortOption] = useState('value');
   const { mode, balanceUsd, totalChange, totalChangePositive, portfolioAssets, networkAllocation } = useAppData();
   const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
 
   const balanceNum = useMemo(() => parseFloat(balanceUsd.replace(/[$,]/g, '')) || 100000, [balanceUsd]);
   const chartData = useMemo(() => generateChartData(balanceNum, activeTimeFilter, 0xdeadbeef), [balanceNum, activeTimeFilter]);
+
+  // Sorting portfolio assets
+  const sortedAssets = useMemo(() => {
+    const items = [...portfolioAssets];
+    if (sortOption === 'value') {
+      return items.sort((a, b) => parseFloat(b.value.replace(/[$,]/g, '')) - parseFloat(a.value.replace(/[$,]/g, '')));
+    }
+    if (sortOption === 'balance') {
+      return items.sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance));
+    }
+    return items.sort((a, b) => a.name.localeCompare(b.name));
+  }, [portfolioAssets, sortOption]);
+
+  // Portfolio health/risk score based on top allocation concentration
+  const healthScore = useMemo(() => {
+    const topPct = networkAllocation[0]?.percent ?? 0;
+    const score = Math.max(5, Math.min(95, 100 - topPct));
+    const label = score >= 70 ? 'Low Volatility' : score >= 40 ? 'Medium Volatility' : 'High Volatility';
+    return { score, label };
+  }, [networkAllocation]);
 
   if (mode === 'disconnected') {
     return (
@@ -102,10 +123,10 @@ export default function Portfolio() {
           {portfolioAssets.length > 0 && (
             <div className="sort-controls">
               <span>Sort by:</span>
-              <select>
-                <option>Value (High to Low)</option>
-                <option>Balance</option>
-                <option>Name</option>
+              <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+                <option value="value">Value (High to Low)</option>
+                <option value="balance">Balance</option>
+                <option value="name">Name</option>
               </select>
             </div>
           )}
@@ -122,7 +143,7 @@ export default function Portfolio() {
                 <div className="col-change">24h Change</div>
               </div>
 
-              {portfolioAssets.map((asset) => (
+              {sortedAssets.map((asset) => (
                 <div className="asset-row" key={asset.id}>
                   <div className="col-asset">
                     <div className="asset-icon">
@@ -185,8 +206,13 @@ export default function Portfolio() {
                 networkAllocation.map((net) => (
                   <div className="legend-item" key={net.label}>
                     <div className="info">
-                      <div className={`dot ${net.dotClass}`}></div>
-                      <span>{net.label}</span>
+                      {/* show mini icon if available */}
+                      {net.id ? (
+                        <img src={portfolioAssets.find(a => a.id === net.id)?.icon || ''} alt={net.label} style={{ width: 16, height: 16, borderRadius: 9999 }} />
+                      ) : (
+                        <div className={`dot ${net.dotClass}`}></div>
+                      )}
+                      <span style={{ marginLeft: 8 }}>{net.label}</span>
                     </div>
                     <span className="amount">{net.amount}</span>
                   </div>
@@ -205,16 +231,16 @@ export default function Portfolio() {
             <div className="health-header">
               <span className="material-symbols-outlined">auto_awesome</span>
               <h4>Portfolio Health</h4>
-              <p>Your sovereign assets are diversified across {networkAllocation.length} network{networkAllocation.length !== 1 ? 's' : ''} with a focus on high-liquidity tokens.</p>
+              <p>Your assets are diversified across {networkAllocation.length} network{networkAllocation.length !== 1 ? 's' : ''} with a focus on high-liquidity tokens.</p>
             </div>
           </div>
           <div className="health-score">
             <div className="score-info">
               <span>Risk Score</span>
-              <span className="value">Low Volatility</span>
+              <span className="value">{healthScore.label} • {healthScore.score}%</span>
             </div>
             <div className="score-bar">
-              <div className="fill"></div>
+              <div className="fill" style={{ width: `${healthScore.score}%` }}></div>
             </div>
           </div>
         </div>

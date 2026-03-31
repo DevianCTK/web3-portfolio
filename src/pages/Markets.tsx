@@ -101,7 +101,8 @@ export default function Markets() {
                   className="btn-trade"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate('/dashboard/swap');
+                    // pass the clicked token symbol to the swap page so it can prefill the receive token
+                    navigate('/dashboard/swap', { state: { receive: token.symbol } });
                   }}
                 >
                   Trade
