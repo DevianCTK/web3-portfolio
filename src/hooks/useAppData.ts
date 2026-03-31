@@ -33,6 +33,7 @@ export interface NetworkItem {
   amount: string;
   dotClass: string;
   percent: number;
+  id?: string;
 }
 
 export interface OverviewTransaction {
