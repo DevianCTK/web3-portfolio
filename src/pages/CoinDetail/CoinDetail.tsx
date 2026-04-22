@@ -397,10 +397,46 @@ export default function CoinDetail() {
                 <span className="label">{t('coin.exchangeRate')}</span>
                 <span className="value">1 {coin.symbol} = {priceNum.toLocaleString()} USDC</span>
               </div>
-              <div className="detail-row">
-                <span className="label">{t('coin.priceImpact')}</span>
-                <span className="value highlight-secondary">&lt; 0.01%</span>
-              </div>
+              {/* Price impact / slippage estimates */}
+              {(() => {
+                const payValUsd = payIsUsdc ? Number(payAmount || 0) : (Number(payAmount || 0) * priceNum);
+                const tokenMarketCap = prices?.[coinId ?? '']?.usd_market_cap ?? (priceNum * 1_000_000);
+                const liquidityEstimate = Math.max(10_000, tokenMarketCap * 0.001);
+                let priceImpactPct = 0;
+                if (liquidityEstimate > 0 && payValUsd > 0) priceImpactPct = (payValUsd / liquidityEstimate) * 100;
+
+                const priceImpactLabel = priceImpactPct < 0.01 ? '< 0.01%' : (priceImpactPct >= 100 ? '> 100%' : priceImpactPct.toFixed(2) + '%');
+                const MAX_SLIPPAGE = 0.5; // percent
+
+                // Network cost: estimate using ETH gas assumptions (uses ETH price if available)
+                const ETH_PRICE = prices?.ethereum?.usd ?? 2450;
+                const GAS_USED = 21000; // rough tx
+                const GAS_GWEI = 5; // conservative demo estimate yields about $0.25
+                const gasEth = GAS_USED * GAS_GWEI * 1e-9;
+                const networkCostUsd = (gasEth * ETH_PRICE);
+
+                return (
+                  <>
+                    <div className="detail-row">
+                      <span className="label">{t('coin.priceImpact')}</span>
+                      <span className="value highlight-secondary">{priceImpactLabel}</span>
+                    </div>
+                    <div className="detail-row">
+                      <div className="label-with-icon">
+                        <span className="label">{t('swap.maxSlippage')}</span>
+                      </div>
+                      <span className="value">{MAX_SLIPPAGE}%</span>
+                    </div>
+                    <div className="detail-row">
+                      <div className="label-with-icon warning">
+                        <span className="material-symbols-outlined icon">local_gas_station</span>
+                        <span className="label">{t('swap.networkCost')}</span>
+                      </div>
+                      <span className="value highlight-bold">${networkCostUsd.toFixed(2)}</span>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
 
             <button

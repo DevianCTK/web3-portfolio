@@ -87,6 +87,7 @@ function txToOverview(tx: Transaction): OverviewTransaction {
 export function useAppData(): AppData {
   const mode = useWalletStore((s) => s.mode);
   const balance = useWalletStore((s) => s.balance);
+  const tokenBalances = useWalletStore((s) => s.tokenBalances);
   const { data: prices, isLoading: isLoadingPrices } = usePrices();
   const { transactions: demoTransactions } = useDemoTransactions();
   const { balances } = useDemoBalances();
@@ -191,41 +192,81 @@ export function useAppData(): AppData {
   }
 
   if (mode === 'wallet') {
-    const parsedBalance = parseFloat(balance || '0');
-    const usdValue = parsedBalance * ethPrice;
-    const usdFormatted = usdValue > 0 ? formatUsd(usdValue) : '$0.00';
+    // For wallet mode, include the connected ETH balance plus ERC-20 token balances
+    const parsedEth = parseFloat(balance || '0');
 
-    const ethChange = prices?.ethereum?.usd_24h_change;
-    const changeStr = ethChange != null ? (ethChange >= 0 ? '+' : '') + ethChange.toFixed(2) + '%' : '--';
+    // Build assets list starting with ETH
+    const assets: PortfolioAsset[] = [];
 
-    const assets: PortfolioAsset[] = parsedBalance > 0
-      ? [{
+    if (parsedEth > 0) {
+      const ethChange = prices?.ethereum?.usd_24h_change;
+      assets.push({
         id: 'eth',
         name: 'Ethereum',
         ticker: 'ETH',
         priceLabel: formatUsd(ethPrice),
-        balance: parsedBalance.toFixed(4),
-        value: usdFormatted,
-        change: changeStr,
+        balance: parsedEth.toFixed(6),
+        value: formatUsd(parsedEth * ethPrice),
+        change: ethChange != null ? (ethChange >= 0 ? '+' : '') + ethChange.toFixed(2) + '%' : '--',
         isPositive: ethChange != null ? ethChange >= 0 : true,
         icon: TOKENS.ethereum.icon,
-      }]
-      : [];
+      });
+    }
+
+    // Add any ERC-20 token balances we have in store
+    if (tokenBalances && Object.keys(tokenBalances).length > 0) {
+      for (const [sym, rawBal] of Object.entries(tokenBalances)) {
+        const balNum = parseFloat(rawBal || '0');
+        if (isNaN(balNum) || balNum <= 0) continue;
+
+        // Map symbol -> internal token id in TOKENS where possible
+        const tokenMeta = Object.values(TOKENS).find((t) => t.symbol === sym || t.id === sym.toLowerCase());
+        const internalId = tokenMeta ? tokenMeta.id : sym.toLowerCase();
+        const livePrice = prices?.[internalId]?.usd;
+
+        const valueNum = (livePrice ?? tokenMeta?.price ?? 0) * balNum;
+
+        assets.push({
+          id: internalId,
+          name: tokenMeta?.name ?? sym,
+          ticker: sym,
+          priceLabel: livePrice ? formatUsd(livePrice) : formatUsd(tokenMeta?.price),
+          balance: balNum.toString(),
+          value: formatUsd(valueNum),
+          change: livePrice != null && prices?.[internalId]?.usd_24h_change != null ? (prices![internalId]!.usd_24h_change! >= 0 ? '+' : '') + prices![internalId]!.usd_24h_change!.toFixed(2) + '%' : '--',
+          isPositive: prices?.[internalId]?.usd_24h_change != null ? prices![internalId]!.usd_24h_change! >= 0 : true,
+          icon: tokenMeta?.icon ?? '',
+        });
+      }
+    }
+
+    const totalUsd = assets.reduce((s, a) => s + parseFloat(a.value.replace(/[$,]/g, '')) || 0, 0);
+    const totalChange = (() => {
+      // weighted average change where available
+      let w = 0;
+      let sum = 0;
+      for (const a of assets) {
+        const ch = parseFloat(a.change.replace(/[+%]/g, ''));
+        const val = parseFloat(a.value.replace(/[$,]/g, '')) || 0;
+        if (!isNaN(ch) && val > 0) {
+          sum += ch * val;
+          w += val;
+        }
+      }
+      const avg = w > 0 ? sum / w : 0;
+      return (avg >= 0 ? '+' : '') + avg.toFixed(2) + '%';
+    })();
 
     return {
       mode,
-      balanceUsd: usdFormatted,
-      totalChange: changeStr,
-      totalChangePositive: ethChange != null ? ethChange >= 0 : true,
+      balanceUsd: formatUsd(totalUsd),
+      totalChange,
+      totalChangePositive: totalChange.startsWith('+'),
       portfolioAssets: assets,
       transactions: [],
       overviewTransactions: [],
-      assetAllocation: parsedBalance > 0
-        ? [{ label: 'Ethereum', percent: '100%', dotClass: 'eth' }]
-        : [],
-      networkAllocation: parsedBalance > 0
-        ? [{ label: 'Ethereum Mainnet', amount: usdFormatted, dotClass: 'eth', percent: 100 }]
-        : [],
+      assetAllocation: assets.map((a) => ({ label: a.name, percent: '0%', dotClass: 'other', icon: a.icon })),
+      networkAllocation: assets.length > 0 ? [{ label: 'Ethereum Mainnet', amount: formatUsd(totalUsd), dotClass: 'eth', percent: 100 }] : [],
       isLoadingPrices,
     };
   }

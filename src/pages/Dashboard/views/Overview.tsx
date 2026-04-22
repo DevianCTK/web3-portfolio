@@ -43,7 +43,7 @@ export default function Overview() {
             <h1 className="amount">{balanceUsd}</h1>
             <div className="growth">
               {totalChange !== '--' && (
-                <span className="badge">
+                <span className={`badge change ${totalChangePositive ? 'positive' : 'negative'}`}>
                   <span className="material-symbols-outlined">
                     {totalChangePositive ? 'trending_up' : 'trending_down'}
                   </span>

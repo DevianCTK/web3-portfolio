@@ -6,6 +6,7 @@ export type AppMode = 'disconnected' | 'demo' | 'wallet';
 interface WalletState {
   address: string | null;
   balance: string | null;
+  tokenBalances: Record<string, string>;
   isConnecting: boolean;
   isConnectModalOpen: boolean;
   mode: AppMode;
@@ -14,6 +15,7 @@ interface WalletState {
   setConnecting: (isConnecting: boolean) => void;
   setConnectModalOpen: (isOpen: boolean) => void;
   setMode: (mode: AppMode) => void;
+  setTokenBalances: (balances: Record<string, string>) => void;
   disconnect: () => void;
 }
 
@@ -45,6 +47,7 @@ const initial = loadSession();
 export const useWalletStore = create<WalletState>((set) => ({
   address: initial?.address ?? null,
   balance: initial?.balance ?? null,
+  tokenBalances: {},
   isConnecting: false,
   isConnectModalOpen: false,
   mode: (initial?.mode as AppMode) ?? 'disconnected',
@@ -71,6 +74,7 @@ export const useWalletStore = create<WalletState>((set) => ({
       return { mode };
     });
   },
+  setTokenBalances: (balances) => set(() => ({ tokenBalances: balances })),
   disconnect: () => {
     try { localStorage.removeItem(STORAGE_KEY); } catch { }
     set({ address: null, balance: null, mode: 'disconnected' });

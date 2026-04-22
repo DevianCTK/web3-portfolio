@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWallet } from '../../hooks/useWallet';
 import { useWalletStore } from '../../store/useWalletStore';
+import { SHOW_LANGUAGE_SELECTOR } from '../../config/appConfig';
 import './Navbar.scss';
 
 export function Navbar() {
@@ -51,12 +52,14 @@ export function Navbar() {
               </button>
             </div>
           )}
-          <div className="lang-select">
-            <select value={i18n.language || 'en'} onChange={(e) => i18n.changeLanguage(e.target.value)} aria-label="Language">
-              <option value="en">EN</option>
-              <option value="vi">VI</option>
-            </select>
-          </div>
+          {SHOW_LANGUAGE_SELECTOR && (
+            <div className="lang-select">
+              <select value={i18n.language || 'en'} onChange={(e) => i18n.changeLanguage(e.target.value)} aria-label="Language">
+                <option value="en">EN</option>
+                <option value="vi">VI</option>
+              </select>
+            </div>
+          )}
         </div>
       </div>
     </header>

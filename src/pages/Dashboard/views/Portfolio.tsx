@@ -69,7 +69,7 @@ export default function Portfolio() {
             <div className="balance-row">
               <span className="amount">{balanceUsd}</span>
               {totalChange !== '--' && (
-                <span className="change">
+                <span className={`change ${totalChangePositive ? 'positive' : 'negative'}`}>
                   <span className="material-symbols-outlined">
                     {totalChangePositive ? 'trending_up' : 'trending_down'}
                   </span>

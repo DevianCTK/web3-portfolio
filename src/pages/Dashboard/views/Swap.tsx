@@ -6,14 +6,15 @@ import { useWalletStore } from '../../../store/useWalletStore';
 import { useDemoBalances } from '../../../hooks/useDemoBalances';
 import { useDemoTransactions } from '../../../hooks/useDemoTransactions';
 import { TOKENS } from '../../../data/mockData';
+import { usePrices } from '../../../hooks/usePrices';
 import '../../Swap/Swap.scss';
 
 export default function Swap() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const mode = useWalletStore((state) => state.mode);
-
   const { balances, updateBalance } = useDemoBalances();
+  const { data: prices } = usePrices();
   const { addTransaction } = useDemoTransactions();
   const ALLOWED_SWAP_SYMBOLS = ['ETH', 'BTC', 'SOL', 'ARB', 'LINK', 'DOGE', 'USDC'];
   const location = useLocation();
@@ -206,11 +207,25 @@ export default function Swap() {
   const payUsdValue = payAmount ? (Number(payAmount) * payToken.price).toFixed(2) : '0.00';
   const receiveUsdValue = receiveAmount ? (Number(receiveAmount) * receiveToken.price).toFixed(2) : '0.00';
 
-  // Simple network cost estimator (USD)
-  const networkCost = (() => {
-    // base costs (demo): ETH transactions cost more than layer2/stable swaps
-    const base = payToken?.symbol === 'ETH' ? 1.45 : 0.25;
-    return (Number(base)).toFixed(2);
+  // Price impact estimator and network cost
+  const { priceImpactLabel, networkCost } = (() => {
+    const payValUsd = Number(payAmount || 0) * (payToken.price || 0);
+    // Try to use market cap if available
+    const tokenId = (Object.values(TOKENS).find(t => t.symbol === payToken.symbol) || { id: '' }).id || '';
+    const marketCap = prices?.[tokenId]?.usd_market_cap ?? (payToken.price * 1_000_000);
+    const liquidityEstimate = Math.max(10_000, (marketCap || 0) * 0.001);
+    let priceImpactPct = 0;
+    if (liquidityEstimate > 0 && payValUsd > 0) priceImpactPct = (payValUsd / liquidityEstimate) * 100;
+    const priceImpactLabel = priceImpactPct < 0.01 ? '< 0.01%' : (priceImpactPct >= 100 ? '> 100%' : priceImpactPct.toFixed(2) + '%');
+
+    // Network cost in USD: estimate via ETH price when ETH involved, otherwise a low default
+    const ETH_PRICE = prices?.ethereum?.usd ?? TOKENS.ethereum.price;
+    const GAS_USED = 21000;
+    const GAS_GWEI = 5; // demo conservative
+    const gasEth = GAS_USED * GAS_GWEI * 1e-9;
+    const networkCostUsd = (gasEth * ETH_PRICE).toFixed(2);
+
+    return { priceImpactLabel, networkCost: networkCostUsd };
   })();
 
   const isInsufficientBalance = Number(payAmount) > (payToken?.balance ?? 0);
@@ -327,7 +342,7 @@ export default function Swap() {
               </div>
               <div className="detail-row">
                 <span className="label">{t('coin.priceImpact')}</span>
-                <span className="value highlight-secondary">&lt; 0.01%</span>
+                <span className="value highlight-secondary">{priceImpactLabel}</span>
               </div>
               <div className="detail-row">
                 <div className="label-with-icon">

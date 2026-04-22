@@ -11,8 +11,11 @@ import Markets from './pages/Markets';
 import CoinDetail from './pages/CoinDetail/CoinDetail';
 import { ConnectWalletModal } from './components/wallet/ConnectWalletModal';
 import './App.scss';
+import { useTokenBalances } from './hooks/useTokenBalances';
 
 function App() {
+  // Kick off background token balance sync when app mounts
+  useTokenBalances();
   return (
     <div className="min-h-screen bg-background text-on-surface font-body overflow-x-hidden">
       <Navbar />

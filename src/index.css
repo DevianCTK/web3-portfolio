@@ -81,6 +81,25 @@
     color: #f6465d !important;
   }
 
+  /* Align small trend icons with percent text and ensure they inherit color */
+  .change,
+  .badge.change,
+  .change-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .change .material-symbols-outlined,
+  .badge.change .material-symbols-outlined,
+  .change-badge .material-symbols-outlined {
+    font-size: 14px;
+    line-height: 1;
+    color: inherit !important;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
   .glass-panel {
     background: rgba(50, 53, 60, 0.4);
     backdrop-filter: blur(12px);
