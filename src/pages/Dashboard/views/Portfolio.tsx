@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAppData } from '../../../hooks/useAppData';
 import { useWalletStore } from '../../../store/useWalletStore';
 import { generateChartData } from '../../../services/chartData';
 import './Portfolio.scss';
 
 export default function Portfolio() {
+  const { t } = useTranslation();
   const [activeTimeFilter, setActiveTimeFilter] = useState('1W');
   const [sortOption, setSortOption] = useState('value');
   const { mode, balanceUsd, totalChange, totalChangePositive, portfolioAssets, networkAllocation } = useAppData();
@@ -29,7 +31,8 @@ export default function Portfolio() {
   const healthScore = useMemo(() => {
     const topPct = networkAllocation[0]?.percent ?? 0;
     const score = Math.max(5, Math.min(95, 100 - topPct));
-    const label = score >= 70 ? 'Low Volatility' : score >= 40 ? 'Medium Volatility' : 'High Volatility';
+    const labelKey = score >= 70 ? 'health.low' : score >= 40 ? 'health.medium' : 'health.high';
+    const label = labelKey;
     return { score, label };
   }, [networkAllocation]);
 
@@ -39,16 +42,16 @@ export default function Portfolio() {
         <section className="portfolio-hero">
           <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '3rem', opacity: 0.4 }}>account_balance_wallet</span>
-            <h2 style={{ marginTop: '1rem', fontSize: '1.25rem' }}>Connect to View Portfolio</h2>
+            <h2 style={{ marginTop: '1rem', fontSize: '1.25rem' }}>{t('portfolio.connectPrompt')}</h2>
             <p style={{ opacity: 0.5, marginTop: '0.5rem', fontSize: '0.875rem' }}>
-              Connect your wallet or use Demo Mode to view your portfolio.
+              {t('portfolio.connectPrompt') /* short prompt repeated; keep concise */}
             </p>
             <button
               className="btn-primary"
               style={{ marginTop: '1.5rem' }}
               onClick={() => setConnectModalOpen(true)}
             >
-              Connect Wallet
+              {t('portfolio.connectWallet')}
             </button>
           </div>
         </section>
@@ -62,7 +65,7 @@ export default function Portfolio() {
       <section className="portfolio-hero">
         <div className="hero-header">
           <div>
-            <h2 className="title">Total Balance</h2>
+            <h2 className="title">{t('portfolio.totalBalance')}</h2>
             <div className="balance-row">
               <span className="amount">{balanceUsd}</span>
               {totalChange !== '--' && (
@@ -119,14 +122,14 @@ export default function Portfolio() {
       {/* Detailed Asset List Section */}
       <section className="portfolio-assets">
         <div className="assets-header">
-          <h3>Your Assets</h3>
+          <h3>{t('portfolio.yourAssets')}</h3>
           {portfolioAssets.length > 0 && (
             <div className="sort-controls">
-              <span>Sort by:</span>
+              <span>{t('portfolio.sortBy')}</span>
               <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
-                <option value="value">Value (High to Low)</option>
-                <option value="balance">Balance</option>
-                <option value="name">Name</option>
+                <option value="value">{t('portfolio.valueUSD')} (High to Low)</option>
+                <option value="balance">{t('common.balance')}</option>
+                <option value="name">{t('common.name')}</option>
               </select>
             </div>
           )}
@@ -137,10 +140,10 @@ export default function Portfolio() {
           {portfolioAssets.length > 0 ? (
             <>
               <div className="table-header">
-                <div className="col-asset">Asset</div>
-                <div className="col-balance">Balance</div>
-                <div className="col-value">Value (USD)</div>
-                <div className="col-change">24h Change</div>
+                <div className="col-asset">{t('common.name')}</div>
+                <div className="col-balance">{t('common.balance')}</div>
+                <div className="col-value">{t('portfolio.valueUSD')}</div>
+                <div className="col-change">{t('portfolio.change24h')}</div>
               </div>
 
               {sortedAssets.map((asset) => (
@@ -167,7 +170,7 @@ export default function Portfolio() {
           ) : (
             <div className="flex flex-col items-center justify-center py-16 gap-3 opacity-50">
               <span className="material-symbols-outlined text-4xl">account_balance_wallet</span>
-              <p className="text-sm">{mode === 'wallet' ? 'No assets found in your wallet' : 'No assets to display'}</p>
+              <p className="text-sm">{mode === 'wallet' ? t('portfolio.noAssetsWallet') : t('portfolio.noAssets')}</p>
             </div>
           )}
         </div>
@@ -176,7 +179,7 @@ export default function Portfolio() {
       {/* Ecosystem Distribution */}
       <section className="portfolio-network">
         <div className="network-allocation">
-          <h4>Network Allocation</h4>
+          <h4>{t('portfolio.networkAllocation')}</h4>
           <div className="allocation-content">
             <div className="chart-ring">
               <svg viewBox="0 0 36 36">
@@ -197,7 +200,7 @@ export default function Portfolio() {
                 })}
               </svg>
               <div className="chart-center">
-                <span className="label">Mainnet</span>
+                <span className="label">{t('portfolio.mainnet')}</span>
                 <span className="value">{networkAllocation.length > 0 ? `${networkAllocation[0].percent}%` : '0%'}</span>
               </div>
             </div>
@@ -251,7 +254,7 @@ export default function Portfolio() {
                 })
               ) : (
                 <div className="flex items-center justify-center py-4 opacity-50">
-                  <p className="text-sm">No network data available</p>
+                  <p className="text-sm">{t('portfolio.noNetworkData') || 'No network data available'}</p>
                 </div>
               )}
             </div>
@@ -262,14 +265,14 @@ export default function Portfolio() {
           <div>
             <div className="health-header">
               <span className="material-symbols-outlined">auto_awesome</span>
-              <h4>Portfolio Health</h4>
-              <p>Your assets are diversified across {networkAllocation.length} network{networkAllocation.length !== 1 ? 's' : ''} with a focus on high-liquidity tokens.</p>
+              <h4>{t('portfolio.portfolioHealth')}</h4>
+              <p>{t('portfolio.diversifiedText', { count: networkAllocation.length, plural: networkAllocation.length !== 1 ? 's' : '' })}</p>
             </div>
           </div>
           <div className="health-score">
             <div className="score-info">
-              <span>Risk Score</span>
-              <span className="value">{healthScore.label} • {healthScore.score}%</span>
+              <span>{t('portfolio.riskScore')}</span>
+              <span className="value">{t(healthScore.label)} • {healthScore.score}%</span>
             </div>
             <div className="score-bar">
               <div className="fill" style={{ width: `${healthScore.score}%` }}></div>

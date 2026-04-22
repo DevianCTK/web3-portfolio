@@ -1,0 +1,176 @@
+{
+    "app": {
+        "name": "ETHEREAL"
+    },
+    "navbar": {
+        "dashboard": "Dashboard",
+        "markets": "Markets",
+        "connectWallet": "Connect Wallet",
+        "demo": "Demo",
+        "live": "Live",
+        "demoWallet": "Demo Wallet",
+        "disconnectTitle": "Disconnect and return to landing"
+    },
+    "connectModal": {
+        "title": "Connect Identity",
+        "metaMask": "MetaMask",
+        "browserExtension": "Browser Extension",
+        "demoMode": "Demo Mode",
+        "demoDesc": "Explore with mock data",
+        "connectingTitle": "Connecting to MetaMask...",
+        "connectingSubtitle": "Awaiting Signature",
+        "terms": "By connecting, you agree to the Protocol Interface Terms.",
+        "noWalletTitle": "No wallet detected",
+        "noWalletDesc": "MetaMask is required for full functionality.",
+        "installMetaMask": "Install MetaMask",
+        "continueDemo": "Continue with Demo"
+    },
+    "portfolio": {
+        "connectPrompt": "Connect to View Portfolio",
+        "connectWallet": "Connect Wallet",
+        "totalBalance": "Total Balance",
+        "sortBy": "Sort by:",
+        "yourAssets": "Your Assets",
+        "valueUSD": "Value (USD)",
+        "change24h": "24h Change",
+        "noAssetsWallet": "No assets found in your wallet",
+        "noAssets": "No assets to display",
+        "networkAllocation": "Network Allocation",
+        "mainnet": "Mainnet",
+        "portfolioHealth": "Portfolio Health",
+        "riskScore": "Risk Score",
+        "diversifiedText": "Your assets are diversified across {{count}} network{{plural}} with a focus on high-liquidity tokens."
+    },
+    "overview": {
+        "connectPrompt": "Connect to View Dashboard",
+        "connectDesc": "Connect your wallet or use Demo Mode to access the dashboard.",
+        "connectWallet": "Connect Wallet",
+        "recentTransactions": "Recent Transactions",
+        "viewAll": "View All",
+        "assetAllocation": "Asset Allocation",
+        "noOnchainAssets": "No on-chain assets to display",
+        "noAllocationData": "No allocation data",
+        "portfolioAnalysis": "Portfolio Analysis",
+        "shieldActive": "Shield Active",
+        "shieldDesc": "Your wallet is being monitored for suspicious approval requests."
+    },
+    "noNetworkData": "No network data available",
+    "health": {
+        "low": "Low Volatility",
+        "medium": "Medium Volatility",
+        "high": "High Volatility"
+    },
+    "errors": {
+        "useToastContext": "useToast must be inside ToastProvider"
+    },
+    "activity": {
+        "connectPrompt": "Connect to View Activity",
+        "connectDesc": "Connect your wallet or use Demo Mode to view your transaction history.",
+        "historicalLedger": "Historical Ledger",
+        "title": "Activity",
+        "headers": {
+            "date": "Date & Time",
+            "action": "Action",
+            "asset": "Asset",
+            "amount": "Amount",
+            "status": "Status"
+        },
+        "viewTransaction": "View Transaction",
+        "demoOnly": "Activity available in Demo Mode only",
+        "noTransactions": "No transactions yet",
+        "switchToDemo": "Switch to Demo Mode to explore simulated transaction activity",
+        "afterFirstSwap": "Your transaction history will appear here after your first swap"
+    },
+    "pagination": {
+        "prev": "Prev",
+        "next": "Next"
+    },
+    "coin": {
+        "notFound": "Coin not found",
+        "backToMarkets": "Back to Markets",
+        "connectWalletToView": "Connect wallet to view",
+        "swap": {
+            "connectToSwap": "Connect Wallet to Swap",
+            "demoOnly": "Swap available in Demo Mode only",
+            "now": "Swap Now"
+        },
+        "low24": "Low (24h)",
+        "high24": "High (24h)",
+        "priceRange": "Price Range",
+        "aboutTitle": "About {{name}}",
+        "trade": "Trade {{symbol}}",
+        "youPay": "You Pay",
+        "youReceive": "You Receive",
+        "max": "Max",
+        "exchangeRate": "Exchange Rate",
+        "priceImpact": "Price Impact",
+        "marketStats": "Market Stats",
+        "marketCap": "Market Cap",
+        "volume24": "Volume (24h)",
+        "circulatingSupply": "Circulating Supply",
+        "allTimeHigh": "All Time High",
+        "allTimeLow": "All Time Low",
+        "yourBalance": "Your Balance",
+        "transactionSuccessTitle": "Transaction Successful",
+        "transactionSuccessBody": "Your swap has been processed and confirmed on the blockchain.",
+        "returnToDashboard": "Return to Dashboard"
+    },
+    "swap": {
+        "connectPrompt": "Connect to Swap",
+        "connectDesc": "Connect your wallet or use Demo Mode to access the swap simulator.",
+        "simulatorTitle": "Swap Simulator",
+        "simulatorDesc": "The swap simulator is available in Demo Mode only. To perform real swaps, use a DEX like Uniswap.",
+        "backToDashboard": "Back to Dashboard",
+        "title": "Swap Tokens",
+        "selectToken": "Select a token",
+        "searchPlaceholder": "Search name or symbol",
+        "maxSlippage": "Max Slippage",
+        "networkCost": "Network Cost",
+        "swapping": "Swapping...",
+        "insufficientBalance": "Insufficient {{symbol}} balance",
+        "swap": "Swap"
+    },
+    "markets": {
+        "title": "Markets",
+        "subtitle": "Real-time performance of top decentralized assets and liquidity pools.",
+        "searchPlaceholder": "Search tokens or pairs...",
+        "headers": {
+            "asset": "Asset",
+            "price": "Price",
+            "change24": "24h Change",
+            "mcap": "Market Cap",
+            "action": "Action"
+        },
+        "trade": "Trade",
+        "noMatches": "No tokens found matching \"{{query}}\""
+    },
+    "landing": {
+        "liveOnMainnet": "Live on Mainnet",
+        "heroDescription": "Experience the Protocol Interface for navigating the decentralized frontier. Swap, earn, and govern with the speed of a high-performance terminal and the security of a digital vault.",
+        "goToDashboard": "Go to Dashboard",
+        "features": {
+            "fastSwaps": {
+                "title": "Blazing Fast Swaps",
+                "desc": "Utilizing a proprietary off-chain order matching engine with on-chain settlement for instantaneous liquidity access."
+            },
+            "security": {
+                "title": "Unrivaled Security",
+                "desc": "Multi-sig custody and rigorous smart contract audits by Tier-1 cybersecurity firms ensure your assets remain secure."
+            },
+            "yield": {
+                "title": "Yield Optimization",
+                "desc": "Automated compounding and cross-protocol arbitrage to maximize your capital efficiency without manual intervention."
+            }
+        },
+        "cta": {
+            "title": "Ready to navigate the New Internet?",
+            "desc": "Connect your wallet today and claim your Protocol Interface identity in the Ethereal Edge ecosystem."
+        }
+    },
+    "common": {
+        "balance": "Balance",
+        "value": "Value",
+        "name": "Name",
+        "close": "Close"
+    }
+}

@@ -2,28 +2,30 @@ import { useNavigate } from 'react-router-dom';
 import { useAppData } from '../../../hooks/useAppData';
 import { TOKENS, SWAP_TOKENS, PORTFOLIO_ASSETS } from '../../../data/mockData';
 import { useWalletStore } from '../../../store/useWalletStore';
+import { useTranslation } from 'react-i18next';
 import './Overview.scss';
 
 export default function Overview() {
   const navigate = useNavigate();
   const { mode, balanceUsd, totalChange, totalChangePositive, overviewTransactions, assetAllocation } = useAppData();
   const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
+  const { t } = useTranslation();
 
   if (mode === 'disconnected') {
     return (
       <div className="overview-view">
         <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
           <span className="material-symbols-outlined" style={{ fontSize: '3rem', opacity: 0.4 }}>dashboard</span>
-          <h2 style={{ marginTop: '1rem', fontSize: '1.25rem' }}>Connect to View Dashboard</h2>
+          <h2 style={{ marginTop: '1rem', fontSize: '1.25rem' }}>{t('overview.connectPrompt', 'Connect to View Dashboard')}</h2>
           <p style={{ opacity: 0.5, marginTop: '0.5rem', fontSize: '0.875rem' }}>
-            Connect your wallet or use Demo Mode to access the dashboard.
+            {t('overview.connectDesc', 'Connect your wallet or use Demo Mode to access the dashboard.')}
           </p>
           <button
             className="btn-primary"
             style={{ marginTop: '1.5rem' }}
             onClick={() => setConnectModalOpen(true)}
           >
-            Connect Wallet
+            {t('overview.connectWallet', 'Connect Wallet')}
           </button>
         </div>
       </div>
@@ -74,9 +76,9 @@ export default function Overview() {
         {/* Transactions Table */}
         <div className="transactions-table">
           <div className="table-header">
-            <h3>Recent Transactions</h3>
+            <h3>{t('overview.recentTransactions', 'Recent Transactions')}</h3>
             {overviewTransactions.length > 0 && (
-              <button className="text-primary text-sm hover:underline" onClick={() => navigate('/dashboard/activity')}>View All</button>
+              <button className="text-primary text-sm hover:underline" onClick={() => navigate('/dashboard/activity')}>{t('overview.viewAll', 'View All')}</button>
             )}
           </div>
           <div className="table-wrapper">
@@ -84,11 +86,11 @@ export default function Overview() {
               <table>
                 <thead>
                   <tr>
-                    <th>Action</th>
-                    <th>Asset</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th style={{ textAlign: 'right' }}>Time</th>
+                    <th>{t('activity.headers.action', 'Action')}</th>
+                    <th>{t('activity.headers.asset', 'Asset')}</th>
+                    <th>{t('activity.headers.amount', 'Amount')}</th>
+                    <th>{t('activity.headers.status', 'Status')}</th>
+                    <th style={{ textAlign: 'right' }}>{t('activity.headers.date', 'Time')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -162,7 +164,7 @@ export default function Overview() {
             ) : (
               <div className="flex flex-col items-center justify-center py-12 gap-2 opacity-50">
                 <span className="material-symbols-outlined text-3xl">receipt_long</span>
-                <p className="text-sm">{mode === 'wallet' ? 'Activity available in Demo Mode only' : 'No transactions yet'}</p>
+                <p className="text-sm">{mode === 'wallet' ? t('activity.demoOnly', 'Activity available in Demo Mode only') : t('activity.noTransactions', 'No transactions yet')}</p>
               </div>
             )}
           </div>
@@ -171,7 +173,7 @@ export default function Overview() {
         {/* Portfolio Breakdown Sidebar Content */}
         <div className="sidebar-content">
           <div className="asset-allocation">
-            <h3>Asset Allocation</h3>
+            <h3>{t('overview.assetAllocation', 'Asset Allocation')}</h3>
             {assetAllocation.length > 0 ? (
               <div className="allocation-list">
                 {assetAllocation.map((item, i) => (
@@ -191,19 +193,19 @@ export default function Overview() {
             ) : (
               <div className="flex flex-col items-center justify-center py-8 gap-2 opacity-50">
                 <span className="material-symbols-outlined text-2xl">pie_chart</span>
-                <p className="text-sm">{mode === 'wallet' ? 'No on-chain assets to display' : 'No allocation data'}</p>
+                <p className="text-sm">{mode === 'wallet' ? t('overview.noOnchainAssets', 'No on-chain assets to display') : t('overview.noAllocationData', 'No allocation data')}</p>
               </div>
             )}
 
             <div className="analysis-btn">
-              <button onClick={() => navigate('/dashboard/portfolio')}>Portfolio Analysis</button>
+              <button onClick={() => navigate('/dashboard/portfolio')}>{t('overview.portfolioAnalysis', 'Portfolio Analysis')}</button>
             </div>
           </div>
 
           <div className="security-banner">
             <div className="content">
-              <h4>Shield Active</h4>
-              <p>Your wallet is being monitored for suspicious approval requests.</p>
+              <h4>{t('overview.shieldActive', 'Shield Active')}</h4>
+              <p>{t('overview.shieldDesc', 'Your wallet is being monitored for suspicious approval requests.')}</p>
             </div>
             <span className="material-symbols-outlined bg-icon" style={{ fontVariationSettings: "'FILL' 1" }}>
               security

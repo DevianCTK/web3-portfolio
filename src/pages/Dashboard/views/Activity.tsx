@@ -3,6 +3,7 @@ import { TOKENS, SWAP_TOKENS, PORTFOLIO_ASSETS } from '../../../data/mockData';
 import { useWalletStore } from '../../../store/useWalletStore';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import './Activity.scss';
 
 const ACTION_CONFIG = {
@@ -12,6 +13,7 @@ const ACTION_CONFIG = {
 } as const;
 
 export default function Activity() {
+  const { t } = useTranslation();
   const { mode, transactions } = useAppData();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const PAGE_SIZE = 8; // items per page for activity listing
@@ -34,16 +36,16 @@ export default function Activity() {
           <div className="content-container">
             <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '3rem', opacity: 0.4 }}>receipt_long</span>
-              <h2 style={{ marginTop: '1rem', fontSize: '1.25rem' }}>Connect to View Activity</h2>
+              <h2 style={{ marginTop: '1rem', fontSize: '1.25rem' }}>{t('activity.connectPrompt')}</h2>
               <p style={{ opacity: 0.5, marginTop: '0.5rem', fontSize: '0.875rem' }}>
-                Connect your wallet or use Demo Mode to view your transaction history.
+                {t('activity.connectDesc')}
               </p>
               <button
                 className="btn-primary"
                 style={{ marginTop: '1.5rem' }}
                 onClick={() => setConnectModalOpen(true)}
               >
-                Connect Wallet
+                {t('navbar.connectWallet')}
               </button>
             </div>
           </div>
@@ -59,8 +61,8 @@ export default function Activity() {
           {/* Page Header */}
           <div className="page-header">
             <div className="title-area">
-              <p className="subtitle">Historical Ledger</p>
-              <h1 className="title">Activity</h1>
+              <p className="subtitle">{t('activity.historicalLedger')}</p>
+              <h1 className="title">{t('activity.title')}</h1>
             </div>
           </div>
 
@@ -71,11 +73,11 @@ export default function Activity() {
                 <table className="activity-table">
                   <thead>
                     <tr>
-                      <th>Date & Time</th>
-                      <th>Action</th>
-                      <th>Asset</th>
-                      <th>Amount</th>
-                      <th>Status</th>
+                      <th>{t('activity.headers.date')}</th>
+                      <th>{t('activity.headers.action')}</th>
+                      <th>{t('activity.headers.asset')}</th>
+                      <th>{t('activity.headers.amount')}</th>
+                      <th>{t('activity.headers.status')}</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -177,7 +179,7 @@ export default function Activity() {
                             <td className="col-link text-right">
                               <button
                                 className="icon-link-btn"
-                                title="View Transaction"
+                                title={t('activity.viewTransaction')}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   navigate(`/dashboard/activity/${tx.id}`);
@@ -199,11 +201,11 @@ export default function Activity() {
                   </div>
                   <div className="pagination-controls">
                     <button className="btn-link" disabled={currentPage <= 1} onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} style={{ marginRight: '0.5rem' }}>
-                      Prev
+                      {t('pagination.prev')}
                     </button>
                     <span style={{ margin: '0 0.5rem' }}>{currentPage} / {totalPages}</span>
                     <button className="btn-link" disabled={currentPage >= totalPages} onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} style={{ marginLeft: '0.5rem' }}>
-                      Next
+                      {t('pagination.next')}
                     </button>
                   </div>
                 </div>
@@ -212,12 +214,12 @@ export default function Activity() {
               <div className="flex flex-col items-center justify-center py-20 gap-3 opacity-50">
                 <span className="material-symbols-outlined text-4xl">receipt_long</span>
                 <h3 className="text-lg font-medium">
-                  {mode === 'wallet' ? 'Activity available in Demo Mode only' : 'No transactions yet'}
+                  {mode === 'wallet' ? t('activity.demoOnly') : t('activity.noTransactions')}
                 </h3>
                 <p className="text-sm text-gray-400">
                   {mode === 'wallet'
-                    ? 'Switch to Demo Mode to explore simulated transaction activity'
-                    : 'Your transaction history will appear here after your first swap'}
+                    ? t('activity.switchToDemo')
+                    : t('activity.afterFirstSwap')}
                 </p>
               </div>
             )}

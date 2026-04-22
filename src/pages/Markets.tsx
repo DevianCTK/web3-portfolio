@@ -1,11 +1,13 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { TOKEN_LIST } from '../data/mockData';
 import { usePrices } from '../hooks/usePrices';
 import { formatUsd, formatMarketCap, formatPercent } from '../services/api/priceService';
 import './Markets.scss';
 
 export default function Markets() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { data: prices } = usePrices();
@@ -49,8 +51,8 @@ export default function Markets() {
       {/* Header Section */}
       <header className="markets-header">
         <div className="title-area">
-          <h1 className="title">Markets</h1>
-          <p className="subtitle">Real-time performance of top decentralized assets and liquidity pools.</p>
+          <h1 className="title">{t('markets.title')}</h1>
+          <p className="subtitle">{t('markets.subtitle')}</p>
         </div>
 
         {/* Search Bar Component */}
@@ -58,7 +60,7 @@ export default function Markets() {
           <span className="material-symbols-outlined search-icon">search</span>
           <input
             type="text"
-            placeholder="Search tokens or pairs..."
+            placeholder={t('markets.searchPlaceholder')}
             value={searchQuery}
             onChange={handleSearch}
           />
@@ -67,11 +69,11 @@ export default function Markets() {
 
       {/* Markets Bento Grid / Table Header */}
       <div className="grid-header">
-        <div className="col-asset">Asset</div>
-        <div className="col-price">Price</div>
-        <div className="col-change">24h Change</div>
-        <div className="col-mcap">Market Cap</div>
-        <div className="col-action">Action</div>
+        <div className="col-asset">{t('markets.headers.asset')}</div>
+        <div className="col-price">{t('markets.headers.price')}</div>
+        <div className="col-change">{t('markets.headers.change24')}</div>
+        <div className="col-mcap">{t('markets.headers.mcap')}</div>
+        <div className="col-action">{t('markets.headers.action')}</div>
       </div>
 
       {/* Token List (Asset Rows) */}
@@ -105,14 +107,14 @@ export default function Markets() {
                     navigate('/dashboard/swap', { state: { receive: token.symbol } });
                   }}
                 >
-                  Trade
+                  {t('markets.trade')}
                 </button>
               </div>
             </div>
           ))
         ) : (
           <div className="text-center py-12 opacity-50">
-            No tokens found matching "{searchQuery}"
+            {t('markets.noMatches', { query: searchQuery })}
           </div>
         )}
       </div>

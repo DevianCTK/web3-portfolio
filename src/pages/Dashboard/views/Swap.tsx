@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWalletStore } from '../../../store/useWalletStore';
@@ -8,6 +9,7 @@ import { TOKENS } from '../../../data/mockData';
 import '../../Swap/Swap.scss';
 
 export default function Swap() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const mode = useWalletStore((state) => state.mode);
 
@@ -111,16 +113,16 @@ export default function Swap() {
         <section className="swap-container">
           <div className="swap-card" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '3rem', opacity: 0.4 }}>swap_horiz</span>
-            <h2 style={{ marginTop: '1rem', fontSize: '1.25rem' }}>Connect to Swap</h2>
+            <h2 style={{ marginTop: '1rem', fontSize: '1.25rem' }}>{t('swap.connectPrompt')}</h2>
             <p style={{ opacity: 0.5, marginTop: '0.5rem', fontSize: '0.875rem' }}>
-              Connect your wallet or use Demo Mode to access the swap simulator.
+              {t('swap.connectDesc')}
             </p>
             <button
               className="confirm-btn"
               style={{ marginTop: '1.5rem' }}
               onClick={() => useWalletStore.getState().setConnectModalOpen(true)}
             >
-              Connect Wallet
+              {t('navbar.connectWallet')}
             </button>
           </div>
         </section>
@@ -135,16 +137,16 @@ export default function Swap() {
         <section className="swap-container">
           <div className="swap-card" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '3rem', opacity: 0.4 }}>swap_horiz</span>
-            <h2 style={{ marginTop: '1rem', fontSize: '1.25rem' }}>Swap Simulator</h2>
+            <h2 style={{ marginTop: '1rem', fontSize: '1.25rem' }}>{t('swap.simulatorTitle')}</h2>
             <p style={{ opacity: 0.5, marginTop: '0.5rem', fontSize: '0.875rem' }}>
-              The swap simulator is available in Demo Mode only. To perform real swaps, use a DEX like Uniswap.
+              {t('swap.simulatorDesc')}
             </p>
             <button
               className="confirm-btn"
               style={{ marginTop: '1.5rem' }}
               onClick={() => navigate('/dashboard')}
             >
-              Back to Dashboard
+              {t('swap.backToDashboard')}
             </button>
           </div>
         </section>
@@ -214,9 +216,7 @@ export default function Swap() {
   const isInsufficientBalance = Number(payAmount) > (payToken?.balance ?? 0);
   const isButtonDisabled = isSwapping || !payAmount || Number(payAmount) <= 0 || isInsufficientBalance;
 
-  let buttonText = 'Swap';
-  if (isSwapping) buttonText = 'Swapping...';
-  else if (isInsufficientBalance && payAmount) buttonText = 'Insufficient ' + payToken.symbol + ' balance';
+
 
   return (
     <>
@@ -224,7 +224,7 @@ export default function Swap() {
         <section className="swap-container">
           <div className="swap-card">
             <div className="card-header">
-              <h1>Swap Tokens</h1>
+              <h1>{t('swap.title')}</h1>
               <div className="actions">
                 <button className="icon-btn" onClick={() => {
                   // reset amounts and tokens to sensible defaults
@@ -242,8 +242,8 @@ export default function Swap() {
 
             <div className="input-section">
               <div className="input-header">
-                <span className="label">You Pay</span>
-                <span className="balance">Balance: {(payToken?.balance ?? 0).toFixed(2)} {payToken.symbol}</span>
+                <span className="label">{t('coin.youPay')}</span>
+                <span className="balance">{t('common.balance')}: {(payToken?.balance ?? 0).toFixed(2)} {payToken.symbol}</span>
               </div>
               <div className="input-container">
                 <div className="input-row">
@@ -273,7 +273,7 @@ export default function Swap() {
                 </div>
                 <div className="input-footer">
                   <span className="usd-value">~ ${payUsdValue}</span>
-                  <button className="max-btn" onClick={handleMax}>Max</button>
+                  <button className="max-btn" onClick={handleMax}>{t('coin.max')}</button>
                 </div>
               </div>
             </div>
@@ -286,8 +286,8 @@ export default function Swap() {
 
             <div className="input-section mb-large">
               <div className="input-header">
-                <span className="label">You Receive</span>
-                <span className="balance">Balance: {(receiveToken?.balance ?? 0).toFixed(2)} {receiveToken.symbol}</span>
+                <span className="label">{t('coin.youReceive')}</span>
+                <span className="balance">{t('common.balance')}: {(receiveToken?.balance ?? 0).toFixed(2)} {receiveToken.symbol}</span>
               </div>
               <div className="input-container">
                 <div className="input-row">
@@ -322,16 +322,16 @@ export default function Swap() {
 
             <div className="swap-details">
               <div className="detail-row">
-                <span className="label">Exchange Rate</span>
+                <span className="label">{t('coin.exchangeRate')}</span>
                 <span className="value">1 {payToken.symbol} = {exchangeRate} {receiveToken.symbol}</span>
               </div>
               <div className="detail-row">
-                <span className="label">Price Impact</span>
+                <span className="label">{t('coin.priceImpact')}</span>
                 <span className="value highlight-secondary">&lt; 0.01%</span>
               </div>
               <div className="detail-row">
                 <div className="label-with-icon">
-                  <span className="label">Max Slippage</span>
+                  <span className="label">{t('swap.maxSlippage')}</span>
                   <span className="material-symbols-outlined icon">info</span>
                 </div>
                 <span className="value">0.5%</span>
@@ -339,7 +339,7 @@ export default function Swap() {
               <div className="detail-row footer-row">
                 <div className="label-with-icon warning">
                   <span className="material-symbols-outlined icon">local_gas_station</span>
-                  <span className="label">Network Cost</span>
+                  <span className="label">{t('swap.networkCost')}</span>
                 </div>
                 <span className="value highlight-bold">{isSwapping ? 'Calculating...' : '$' + networkCost}</span>
               </div>
@@ -354,7 +354,7 @@ export default function Swap() {
                 cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
               }}
             >
-              {buttonText}
+              {isSwapping ? t('swap.swapping') : (isInsufficientBalance && payAmount ? t('swap.insufficientBalance', { symbol: payToken.symbol }) : t('swap.swap'))}
             </button>
           </div>
         </section>
@@ -366,7 +366,7 @@ export default function Swap() {
           <div className="picker-backdrop" onClick={() => setTokenPickerTarget(null)} />
           <div className="picker-content">
             <div className="picker-header">
-              <h3>Select a token</h3>
+              <h3>{t('swap.selectToken')}</h3>
               <button className="close-btn" onClick={() => setTokenPickerTarget(null)}>
                 <span className="material-symbols-outlined">close</span>
               </button>
@@ -374,7 +374,7 @@ export default function Swap() {
 
             <div className="picker-search">
               <span className="material-symbols-outlined">search</span>
-              <input value={tokenSearch} onChange={(e) => setTokenSearch(e.target.value)} placeholder="Search name or symbol" />
+              <input value={tokenSearch} onChange={(e) => setTokenSearch(e.target.value)} placeholder={t('swap.searchPlaceholder')} />
             </div>
 
             <div className="picker-top">
@@ -434,8 +434,8 @@ export default function Swap() {
             <div className="success-icon">
               <span className="material-symbols-outlined">check_circle</span>
             </div>
-            <h2>Transaction Successful</h2>
-            <p>Your swap has been processed and confirmed on the blockchain.</p>
+            <h2>{t('coin.transactionSuccessTitle')}</h2>
+            <p>{t('coin.transactionSuccessBody')}</p>
 
             <div className="modal-actions">
               <button
@@ -445,13 +445,13 @@ export default function Swap() {
                   navigate('/dashboard');
                 }}
               >
-                Return to Dashboard
+                {t('coin.returnToDashboard')}
               </button>
               <button
                 className="btn-secondary"
                 onClick={() => setShowSuccessModal(false)}
               >
-                Close
+                {t('common.close')}
               </button>
             </div>
           </div>

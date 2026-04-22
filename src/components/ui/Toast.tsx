@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, createContext, useContext, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import './ui.scss';
 
 // ── Toast Types ──
@@ -19,7 +20,14 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 
 export function useToast() {
   const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error('useToast must be inside ToastProvider');
+  if (!ctx) {
+    try {
+      const { t } = useTranslation();
+      throw new Error(t('errors.useToastContext') || 'useToast must be inside ToastProvider');
+    } catch {
+      throw new Error('useToast must be inside ToastProvider');
+    }
+  }
   return ctx;
 }
 

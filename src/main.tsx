@@ -7,6 +7,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { ToastProvider } from './components/ui/Toast';
 import './index.css';
 import App from './App.tsx';
+import './i18n';
 
 import { injected } from 'wagmi/connectors';
 

@@ -2,9 +2,11 @@ import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../../hooks/useWallet';
 import { useWalletStore } from '../../store/useWalletStore';
 import { usePrices } from '../../hooks/usePrices';
+import { useTranslation } from 'react-i18next';
 import './LandingPage.scss';
 
 export default function LandingPage() {
+  const { t } = useTranslation();
   const { isConnected } = useWallet();
   const setConnectModalOpen = useWalletStore((state) => state.setConnectModalOpen);
   const navigate = useNavigate();
@@ -23,23 +25,23 @@ export default function LandingPage() {
             <div className="hero-content">
               <div className="status-badge">
                 <span className="dot"></span>
-                Live on Mainnet
+                {t('landing.liveOnMainnet')}
               </div>
               <h1 className="hero-title">
                 The Future of <br />
                 <span className="gradient-text">Finance is Here.</span>
               </h1>
               <p className="hero-description">
-                Experience the Protocol Interface for navigating the decentralized frontier. Swap, earn, and govern with the speed of a high-performance terminal and the security of a digital vault.
+                {t('landing.heroDescription')}
               </p>
               <div className="hero-actions">
                 {!isConnected ? (
                   <button onClick={() => setConnectModalOpen(true)} className="btn-primary">
-                    Connect Wallet
+                    {t('navbar.connectWallet')}
                   </button>
                 ) : (
                   <button onClick={() => navigate('/dashboard')} className="btn-primary">
-                    Go to Dashboard
+                    {t('landing.goToDashboard')}
                   </button>
                 )}
                 <button className="btn-outline" onClick={() => navigate('/markets')}>
@@ -118,8 +120,8 @@ export default function LandingPage() {
               <div className="feature-large">
                 <div className="content">
                   <span className="material-symbols-outlined icon">bolt</span>
-                  <h3>Blazing Fast Swaps</h3>
-                  <p>Utilizing a proprietary off-chain order matching engine with on-chain settlement for instantaneous liquidity access.</p>
+                  <h3>{t('landing.features.fastSwaps.title')}</h3>
+                  <p>{t('landing.features.fastSwaps.desc')}</p>
                 </div>
                 <div className="visual">
                   <img alt="abstract light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNviLT-q-hg3VpIfP0Iv2ssCyoxSmwbVL1TfWxaUI98YinKcLw811Q-w2wRbS-OVBsaTBUZ_sdBF21qedDi4UR2kW0Ki-t16ioTRdPDmIJTBnvpEsJhFwAT-Vx59W3oJqmNQ56y1OkZUZ0jhYMVkGNopPiNNIfm9PAJvtx4HWlWnsH5DbGN_9RtfWbo6qmmcgevQe4xk_JOKIYSd6-BLSmIMBBvP9N1Uvc_C213ndOZL_aIjTRbsxXxY5sux4ahtBM__-cTKAVwo4" />
@@ -132,16 +134,16 @@ export default function LandingPage() {
                   <span className="material-symbols-outlined">shield</span>
                 </div>
                 <div className="content">
-                  <h3>Unrivaled Security</h3>
-                  <p>Multi-sig custody and rigorous smart contract audits by Tier-1 cybersecurity firms ensure your assets remain secure.</p>
+                  <h3>{t('landing.features.security.title')}</h3>
+                  <p>{t('landing.features.security.desc')}</p>
                 </div>
               </div>
 
               {/* Yield */}
               <div className="feature-yield">
                 <span className="material-symbols-outlined icon">trending_up</span>
-                <h3>Yield Optimization</h3>
-                <p>Automated compounding and cross-protocol arbitrage to maximize your capital efficiency without manual intervention.</p>
+                <h3>{t('landing.features.yield.title')}</h3>
+                <p>{t('landing.features.yield.desc')}</p>
               </div>
 
               {/* Market Data Small */}
@@ -175,16 +177,16 @@ export default function LandingPage() {
         <section className="cta-section">
           <div className="bg-gradient"></div>
           <div className="cta-container">
-            <h2 className="title">Ready to navigate the <br />New Internet?</h2>
-            <p className="description">Connect your wallet today and claim your Protocol Interface identity in the Ethereal Edge ecosystem.</p>
+            <h2 className="title">{t('landing.cta.title')}</h2>
+            <p className="description">{t('landing.cta.desc')}</p>
             <div className="actions">
               {!isConnected ? (
                 <button onClick={() => setConnectModalOpen(true)} className="btn-primary">
-                  Connect Wallet
+                  {t('navbar.connectWallet')}
                 </button>
               ) : (
                 <button onClick={() => navigate('/dashboard')} className="btn-primary">
-                  Go to Dashboard
+                  {t('landing.goToDashboard')}
                 </button>
               )}
             </div>

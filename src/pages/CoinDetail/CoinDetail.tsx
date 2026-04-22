@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { COIN_DETAILS, TOKENS } from '../../data/mockData';
 import { useWalletStore } from '../../store/useWalletStore';
@@ -15,6 +16,7 @@ import type { CoinDetail as CoinDetailType } from '../../data/mockData';
 import './CoinDetail.scss';
 
 export default function CoinDetail() {
+  const { t } = useTranslation();
   const { coinId } = useParams();
   const navigate = useNavigate();
   // no toast in coin detail swaps
@@ -98,8 +100,8 @@ export default function CoinDetail() {
       }
       return { main: 'No balance data', fiat: '' };
     }
-    return { main: 'Connect wallet to view', fiat: '' };
-  }, [mode, coin, coinId, walletBalance, priceNum, balances]);
+    return { main: t('coin.connectWalletToView'), fiat: '' };
+  }, [mode, coin, coinId, walletBalance, priceNum, balances, t]);
 
   // Bidirectional inputs: when editing payAmount compute receive, and vice versa
   useEffect(() => {
@@ -131,8 +133,8 @@ export default function CoinDetail() {
   if (!coin) {
     return (
       <div className="coin-detail-page text-center">
-        <h2 className="text-2xl opacity-50">Coin not found</h2>
-        <button className="mt-4 text-primary" onClick={() => navigate('/markets')}>Back to Markets</button>
+        <h2 className="text-2xl opacity-50">{t('coin.notFound')}</h2>
+        <button className="mt-4 text-primary" onClick={() => navigate('/markets')}>{t('coin.backToMarkets')}</button>
       </div>
     );
   }
@@ -209,10 +211,10 @@ export default function CoinDetail() {
 
   const swapButtonDisabled = mode === 'wallet' || !payAmount || Number(payAmount) <= 0;
   const swapButtonText = mode === 'disconnected'
-    ? 'Connect Wallet to Swap'
+    ? t('coin.swap.connectToSwap')
     : mode === 'wallet'
-      ? 'Swap available in Demo Mode only'
-      : 'Swap Now';
+      ? t('coin.swap.demoOnly')
+      : t('coin.swap.now');
 
   return (
     <main className="coin-detail-page">
@@ -295,17 +297,17 @@ export default function CoinDetail() {
 
             <div className="chart-footer">
               <div className="stat">
-                <span className="label">Low (24h)</span>
+                <span className="label">{t('coin.low24')}</span>
                 <span className="val">{chartLow}</span>
               </div>
               <div className="range-visual">
                 <div className="bar-bg">
                   <div className="fill"></div>
                 </div>
-                <span className="label">Price Range</span>
+                <span className="label">{t('coin.priceRange')}</span>
               </div>
               <div className="stat" style={{ alignItems: 'flex-end' }}>
-                <span className="label">High (24h)</span>
+                <span className="label">{t('coin.high24')}</span>
                 <span className="val">{chartHigh}</span>
               </div>
             </div>
@@ -313,7 +315,7 @@ export default function CoinDetail() {
 
           {/* About Section */}
           <section className="glass-card about-section">
-            <h3 className="title">About {coin.name}</h3>
+            <h3 className="title">{t('coin.aboutTitle', { name: coin.name })}</h3>
             <div className="content">
               <p>
                 {coin.description}
@@ -327,12 +329,12 @@ export default function CoinDetail() {
           {/* Trading Action Card */}
           <div className="trade-card swap-card">
             <div className="glow"></div>
-            <h4 className="title">Trade {coin.symbol}</h4>
+            <h4 className="title">{t('coin.trade', { symbol: coin.symbol })}</h4>
 
             <div className="input-section">
               <div className="input-header">
-                <span className="label">You Pay</span>
-                <span className="balance">Balance: {(payToken?.balance ?? 0).toFixed(4)} {payToken.symbol}</span>
+                <span className="label">{t('coin.youPay')}</span>
+                <span className="balance">{t('common.balance')}: {(payToken?.balance ?? 0).toFixed(4)} {payToken.symbol}</span>
               </div>
               <div className="input-container">
                 <div className="input-row">
@@ -352,7 +354,7 @@ export default function CoinDetail() {
                 </div>
                 <div className="input-footer">
                   <span className="usd-value">~ ${payIsUsdc ? (payAmount || '0.00') : (payAmount ? (Number(payAmount) * priceNum).toFixed(2) : '0.00')}</span>
-                  <button className="max-btn" onClick={handleMax}>Max</button>
+                  <button className="max-btn" onClick={handleMax}>{t('coin.max')}</button>
                 </div>
               </div>
             </div>
@@ -365,8 +367,8 @@ export default function CoinDetail() {
 
             <div className="input-section mb-large">
               <div className="input-header">
-                <span className="label">You Receive</span>
-                <span className="balance">Balance: {(receiveToken?.balance ?? 0).toFixed(4)} {receiveToken.symbol}</span>
+                <span className="label">{t('coin.youReceive')}</span>
+                <span className="balance">{t('common.balance')}: {(receiveToken?.balance ?? 0).toFixed(4)} {receiveToken.symbol}</span>
               </div>
               <div className="input-container">
                 <div className="input-row">
@@ -392,11 +394,11 @@ export default function CoinDetail() {
 
             <div className="swap-details">
               <div className="detail-row">
-                <span className="label">Exchange Rate</span>
+                <span className="label">{t('coin.exchangeRate')}</span>
                 <span className="value">1 {coin.symbol} = {priceNum.toLocaleString()} USDC</span>
               </div>
               <div className="detail-row">
-                <span className="label">Price Impact</span>
+                <span className="label">{t('coin.priceImpact')}</span>
                 <span className="value highlight-secondary">&lt; 0.01%</span>
               </div>
             </div>
@@ -416,26 +418,26 @@ export default function CoinDetail() {
 
           {/* Market Statistics */}
           <div className="glass-card stats-card">
-            <h4 className="title">Market Stats</h4>
+            <h4 className="title">{t('coin.marketStats')}</h4>
             <div className="stat-list">
               <div className="row">
-                <span className="label">Market Cap</span>
+                <span className="label">{t('coin.marketCap')}</span>
                 <span className="val">{mcapLabel}</span>
               </div>
               <div className="row">
-                <span className="label">Volume (24h)</span>
+                <span className="label">{t('coin.volume24')}</span>
                 <span className="val">{coin.stats.volume}</span>
               </div>
               <div className="row">
-                <span className="label">Circulating Supply</span>
+                <span className="label">{t('coin.circulatingSupply')}</span>
                 <span className="val">{coin.stats.supply}</span>
               </div>
               <div className="row">
-                <span className="label">All Time High</span>
+                <span className="label">{t('coin.allTimeHigh')}</span>
                 <span className="val">{coin.stats.ath}</span>
               </div>
               <div className="row">
-                <span className="label">All Time Low</span>
+                <span className="label">{t('coin.allTimeLow')}</span>
                 <span className="val">{coin.stats.atl}</span>
               </div>
             </div>
@@ -443,7 +445,7 @@ export default function CoinDetail() {
 
           {/* Portfolio Integration */}
           <div className="balance-card">
-            <span className="label">Your Balance</span>
+            <span className="label">{t('coin.yourBalance')}</span>
             <div className="balance-main" style={mode === 'disconnected' ? { fontSize: '0.875rem', opacity: 0.5 } : undefined}>
               {balanceInfo.main}
             </div>
@@ -466,8 +468,8 @@ export default function CoinDetail() {
             <div className="success-icon">
               <span className="material-symbols-outlined">check_circle</span>
             </div>
-            <h2>Transaction Successful</h2>
-            <p>Your swap has been processed and confirmed on the blockchain.</p>
+            <h2>{t('coin.transactionSuccessTitle')}</h2>
+            <p>{t('coin.transactionSuccessBody')}</p>
 
             <div className="modal-actions">
               <button
@@ -477,13 +479,13 @@ export default function CoinDetail() {
                   navigate('/dashboard');
                 }}
               >
-                Return to Dashboard
+                {t('coin.returnToDashboard')}
               </button>
               <button
                 className="btn-secondary"
                 onClick={() => setShowSuccessModal(false)}
               >
-                Close
+                {t('common.close') || 'Close'}
               </button>
             </div>
           </div>

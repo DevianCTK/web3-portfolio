@@ -1,0 +1,182 @@
+{
+    "app": {
+        "name": "ETHEREAL"
+    },
+    "navbar": {
+        "dashboard": "Bảng điều khiển",
+        "markets": "Thị trường",
+        "connectWallet": "Kết nối Ví",
+        "demo": "Demo",
+        "live": "Trực tiếp",
+        "demoWallet": "Ví Demo",
+        "disconnectTitle": "Ngắt kết nối và trở về trang chính"
+    },
+    "connectModal": {
+        "title": "Kết nối danh tính",
+        "metaMask": "MetaMask",
+        "browserExtension": "Tiện ích trình duyệt",
+        "demoMode": "Chế độ Demo",
+        "demoDesc": "Khám phá với dữ liệu giả lập",
+        "connectingTitle": "Đang kết nối tới MetaMask...",
+        "connectingSubtitle": "Đang chờ chữ ký",
+        "terms": "Bằng cách kết nối, bạn đồng ý với Điều khoản Giao diện Giao thức.",
+        "noWalletTitle": "Không phát hiện ví",
+        "noWalletDesc": "Cần MetaMask để sử dụng đầy đủ tính năng.",
+        "installMetaMask": "Cài đặt MetaMask",
+        "continueDemo": "Tiếp tục với Demo"
+    },
+    "portfolio": {
+        "connectPrompt": "Kết nối để xem danh mục",
+        "connectWallet": "Kết nối Ví",
+        "totalBalance": "Tổng số dư",
+        "sortBy": "Sắp xếp theo:",
+        "yourAssets": "Tài sản của bạn",
+        "valueUSD": "Giá trị (USD)",
+        "change24h": "Thay đổi 24h",
+        "noAssetsWallet": "Không tìm thấy tài sản trong ví của bạn",
+        "noAssets": "Không có tài sản để hiển thị",
+        "networkAllocation": "Phân bổ Mạng",
+        "mainnet": "Mainnet",
+        "portfolioHealth": "Tình trạng Danh mục",
+        "riskScore": "Điểm Rủi ro",
+        "diversifiedText": "Tài sản của bạn được phân bổ trên {{count}} mạng{{plural}} với trọng tâm là token thanh khoản cao."
+    },
+    "overview": {
+        "connectPrompt": "Kết nối để xem Bảng điều khiển",
+        "connectDesc": "Kết nối ví của bạn hoặc sử dụng Chế độ Demo để truy cập bảng điều khiển.",
+        "connectWallet": "Kết nối Ví",
+        "recentTransactions": "Giao dịch gần đây",
+        "viewAll": "Xem tất cả",
+        "assetAllocation": "Phân bổ Tài sản",
+        "noOnchainAssets": "Không có tài sản on-chain để hiển thị",
+        "noAllocationData": "Không có dữ liệu phân bổ",
+        "portfolioAnalysis": "Phân tích Danh mục",
+        "shieldActive": "Bảo vệ hoạt động",
+        "shieldDesc": "Ví của bạn đang được giám sát để phát hiện các yêu cầu phê duyệt đáng ngờ."
+    },
+    "noNetworkData": "Không có dữ liệu mạng",
+    "health": {
+        "low": "Rủi ro thấp",
+        "medium": "Rủi ro trung bình",
+        "high": "Rủi ro cao"
+    },
+    "swap": {
+        "connectPrompt": "Kết nối để hoán đổi",
+        "connectDesc": "Kết nối ví của bạn hoặc sử dụng Chế độ Demo để truy cập mô phỏng hoán đổi.",
+        "simulatorTitle": "Trình mô phỏng Hoán đổi",
+        "simulatorDesc": "Trình mô phỏng hoán đổi chỉ có trong Chế độ Demo. Để hoán đổi thực tế, sử dụng DEX như Uniswap.",
+        "backToDashboard": "Quay lại Bảng điều khiển",
+        "title": "Hoán đổi Token",
+        "selectToken": "Chọn token",
+        "searchPlaceholder": "Tìm tên hoặc ký hiệu",
+        "maxSlippage": "Độ trượt tối đa",
+        "networkCost": "Chi phí mạng",
+        "swapping": "Đang hoán đổi...",
+        "insufficientBalance": "Không đủ số dư {{symbol}}",
+        "swap": "Hoán đổi"
+    },
+    "markets": {
+        "title": "Thị trường",
+        "subtitle": "Hiệu suất thời gian thực của các tài sản phi tập trung hàng đầu và pools thanh khoản.",
+        "searchPlaceholder": "Tìm kiếm token hoặc cặp...",
+        "headers": {
+            "asset": "Tài sản",
+            "price": "Giá",
+            "change24": "Thay đổi 24h",
+            "mcap": "Vốn hóa",
+            "action": "Hành động"
+        },
+        "trade": "Giao dịch",
+        "noMatches": "Không tìm thấy token khớp \"{{query}}\""
+    },
+    "landing": {
+        "liveOnMainnet": "Hoạt động trên Mainnet",
+        "heroDescription": "Trải nghiệm Giao diện Giao thức để điều hướng biên giới phi tập trung. Hoán đổi, kiếm lợi và quản trị với tốc độ của một terminal hiệu suất cao và bảo mật của kho kỹ thuật số.",
+        "goToDashboard": "Đi tới Bảng điều khiển",
+        "features": {
+            "fastSwaps": {
+                "title": "Hoán đổi siêu nhanh",
+                "desc": "Sử dụng động cơ ghép lệnh off-chain độc quyền với thanh toán on-chain để truy cập thanh khoản tức thì."
+            },
+            "security": {
+                "title": "Bảo mật vô song",
+                "desc": "Ký nhiều chữ ký và kiểm toán hợp đồng thông minh nghiêm ngặt bởi các công ty an ninh mạng Tier-1 đảm bảo tài sản của bạn được an toàn."
+            },
+            "yield": {
+                "title": "Tối ưu lợi suất",
+                "desc": "Tự động cộng gộp và chênh lệch chéo giữa các giao thức để tối đa hóa hiệu quả vốn của bạn."
+            }
+        },
+        "cta": {
+            "title": "Sẵn sàng điều hướng Internet Mới?",
+            "desc": "Kết nối ví của bạn ngay hôm nay và yêu cầu danh tính Giao diện Giao thức trong hệ sinh thái Ethereal Edge."
+        }
+    },
+    "common": {
+        "balance": "Số dư",
+        "value": "Giá trị",
+        "name": "Tên",
+        "close": "Đóng"
+    },
+    "errors": {
+        "useToastContext": "useToast phải được sử dụng bên trong ToastProvider"
+    },
+    "activity": {
+        "connectPrompt": "Kết nối để xem hoạt động",
+        "connectDesc": "Kết nối ví của bạn hoặc sử dụng Chế độ Demo để xem lịch sử giao dịch.",
+        "historicalLedger": "Sổ cái lịch sử",
+        "title": "Hoạt động",
+        "headers": {
+            "date": "Ngày & Giờ",
+            "action": "Hành động",
+            "asset": "Tài sản",
+            "amount": "Số lượng",
+            "status": "Trạng thái"
+        },
+        "viewTransaction": "Xem giao dịch",
+        "demoOnly": "Hoạt động chỉ có trong Chế độ Demo",
+        "noTransactions": "Chưa có giao dịch",
+        "switchToDemo": "Chuyển sang Chế độ Demo để khám phá hoạt động giao dịch mô phỏng",
+        "afterFirstSwap": "Lịch sử giao dịch sẽ xuất hiện ở đây sau giao dịch đầu tiên của bạn"
+    },
+    "pagination": {
+        "prev": "Trước",
+        "next": "Tiếp"
+    },
+    "coin": {
+        "notFound": "Không tìm thấy đồng tiền",
+        "backToMarkets": "Quay lại Thị trường",
+        "connectWalletToView": "Kết nối ví để xem",
+        "swap": {
+            "connectToSwap": "Kết nối Ví để hoán đổi",
+            "demoOnly": "Hoán đổi chỉ khả dụng trong Chế độ Demo",
+            "now": "Hoán đổi ngay"
+        },
+        "low24": "Thấp (24h)",
+        "high24": "Cao (24h)",
+        "priceRange": "Khoảng giá",
+        "aboutTitle": "Về {{name}}",
+        "trade": "Giao dịch {{symbol}}",
+        "youPay": "Bạn trả",
+        "youReceive": "Bạn nhận",
+        "max": "Tối đa",
+        "exchangeRate": "Tỷ lệ trao đổi",
+        "priceImpact": "Ảnh hưởng giá",
+        "marketStats": "Thống kê thị trường",
+        "marketCap": "Vốn hóa thị trường",
+        "volume24": "Khối lượng (24h)",
+        "circulatingSupply": "Lưu hành",
+        "allTimeHigh": "Đỉnh mọi thời đại",
+        "allTimeLow": "Đáy mọi thời đại",
+        "yourBalance": "Số dư của bạn",
+        "transactionSuccessTitle": "Giao dịch thành công",
+        "transactionSuccessBody": "Hoán đổi của bạn đã được xử lý và xác nhận trên blockchain.",
+        "returnToDashboard": "Quay về Bảng điều khiển"
+    },
+    "common": {
+        "balance": "Số dư",
+        "value": "Giá trị",
+        "name": "Tên",
+        "close": "Đóng"
+    }
+}
