@@ -119,7 +119,7 @@
         "connectPrompt": "Connect to Swap",
         "connectDesc": "Connect your wallet or use Demo Mode to access the swap simulator.",
         "simulatorTitle": "Swap Simulator",
-        "simulatorDesc": "The swap simulator is available in Demo Mode only. To perform real swaps, use a DEX like Uniswap.",
+        "simulatorDesc": "The swap simulator is available in Demo Mode only",
         "backToDashboard": "Back to Dashboard",
         "title": "Swap Tokens",
         "selectToken": "Select a token",

@@ -64,7 +64,7 @@
         "connectPrompt": "Kết nối để hoán đổi",
         "connectDesc": "Kết nối ví của bạn hoặc sử dụng Chế độ Demo để truy cập mô phỏng hoán đổi.",
         "simulatorTitle": "Trình mô phỏng Hoán đổi",
-        "simulatorDesc": "Trình mô phỏng hoán đổi chỉ có trong Chế độ Demo. Để hoán đổi thực tế, sử dụng DEX như Uniswap.",
+        "simulatorDesc": "Trình mô phỏng hoán đổi chỉ có trong Chế độ Demo",
         "backToDashboard": "Quay lại Bảng điều khiển",
         "title": "Hoán đổi Token",
         "selectToken": "Chọn token",
